@@ -1,0 +1,100 @@
+/* style.css */
+
+/* --- 1. 헤더(로고 + 로그인 버튼) 정렬 --- */
+.main-header {
+    display: flex;             /* 가로 정렬 */
+    justify-content: space-between; /* 양쪽 끝으로 배치 */
+    align-items: center;       /* 세로 중앙 정렬 */
+    padding: 10px 20px;
+    background-color: #f8f9fa; /* 배경색 (선택사항) */
+    border-bottom: 1px solid #ddd; /* 하단 테두리 (선택사항) */
+}
+
+.logo h1 {
+    margin: 0; /* 로고 여백 제거 */
+}
+
+.login {
+    display: flex;
+    align-items: center; /* 텍스트와 버튼 높이 맞춤 */
+}
+
+/* --- 2. 로그인/회원가입 모달(팝업) 디자인 --- */
+.modal-overlay {
+    display: none; /* 평소에는 숨김 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 검은 반투명 배경 */
+    backdrop-filter: blur(5px); /* 뒷배경 흐림 효과 */
+    z-index: 1000; /* 제일 위에 띄우기 */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 300px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    position: relative;
+}
+
+/* 닫기 버튼 (X) */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #aaa;
+}
+.close-btn:hover {
+    color: black;
+}
+
+/* 입력창 디자인 */
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* 버튼 디자인 */
+.modal-content button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.modal-content button:hover {
+    background-color: #0056b3;
+}
+
+/* --- 3. 레이아웃 (기존 HTML 구조용) --- */
+.container {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+.left-column {
+    flex: 2; /* 왼쪽이 더 넓게 */
+}
+
+.right-column {
+    flex: 1; /* 오른쪽은 좁게 */
+}

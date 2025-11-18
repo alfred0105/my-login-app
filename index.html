@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>첨성(베타)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 기존 CSS 그대로 유지 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 15px; width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; }
+        .close-btn:hover { color: black; }
+        .modal-content input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        .modal-content button { width: 100%; padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .modal-content button:hover { background-color: #0056b3; }
+        
+        .main-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
+        .logo h1 { margin: 0; }
+        .login { display: flex; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <h1>첨성</h1>
+        </div>
+        <div class="login">
+            <button id="authBtn" style="cursor: pointer;">로그인</button>
+            <span id="userDisplay" style="margin-left: 10px; font-weight: bold;"></span>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="left-column">
+            <h2>일정</h2>
+            <div></div> 
+        </section>
+
+        <aside class="right-column">
+            <h2>공지사항</h2>
+            <section class="notice-box">
+                <ul>
+                    <li>공지사항 1입니다.</li>
+                    <li>공지사항 2입니다.</li>
+                    <li>공지사항 3입니다.</li>
+                </ul>
+            </section>
+            <h2>물품대여</h2>
+            <section class="rental-box">
+                <ul>
+                    <li>공학용 계산기</li>
+                    <li>실험복</li>
+                    <li>충전기</li>
+                </ul>
+            </section>
+        </aside>
+    </main>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            
+            <div id="loginView">
+                <h2>로그인</h2>
+                <form id="loginForm">
+                    <input type="text" id="loginUsername" placeholder="아이디" required>
+                    <input type="password" id="loginPassword" placeholder="비밀번호" required>
+                    <button type="submit">로그인</button>
+                </form>
+                <p style="margin-top:15px; font-size:14px;">
+                    계정이 없으신가요? <span id="showRegisterBtn" style="color:blue; cursor:pointer; font-weight:bold;">회원가입</span>
+                </p>
+            </div>
+
+            <div id="registerView" style="display: none;">
+                <h2>회원가입</h2>
+                <form id="registerForm">
+                    <input type="text" id="regStudentId" placeholder="학번 (예: 20241234)" required>
+                    <input type="text" id="regName" placeholder="이름" required>
+                    
+                    <input type="text" id="regUsername" placeholder="사용할 아이디" required>
+                    <input type="password" id="regPassword" placeholder="비밀번호" required>
+                    <input type="password" id="regPasswordConfirm" placeholder="비밀번호 확인" required>
+                    <button type="submit" style="background-color: #28a745;">가입하기</button>
+                </form>
+                <p style="margin-top:15px; font-size:14px;">
+                    이미 계정이 있나요? <span id="showLoginBtn" style="color:blue; cursor:pointer; font-weight:bold;">로그인</span>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
