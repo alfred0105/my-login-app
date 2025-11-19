@@ -1,24 +1,18 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const path = require('path');
-const multer = require('multer'); // 사진 업로드용
-const fs = require('fs');         // 파일 시스템 관리용
+const multer = require('multer');
+const fs = require('fs');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-// =========================================
-// [1] 파일 업로드 설정 (Multer)
-// =========================================
+// [1] 파일 업로드 설정
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+if (!fs.existsSync(uploadDir)) { fs.mkdirSync(uploadDir); }
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
+    destination: (req, file, cb) => { cb(null, 'uploads/'); },
     filename: (req, file, cb) => {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
         cb(null, Date.now() + '-' + file.originalname);
@@ -30,23 +24,19 @@ app.use(express.static(__dirname));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
 
-
-// =========================================
-// [2] 데이터베이스 연결 (TiDB)
-// =========================================
+// [2] DB 연결
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'test',
     port: 4000,
-    ssl: {
-        minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
-    },
+    ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true },
     waitForConnections: true,
     connectionLimit: 10
 });
+
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 
 // =========================================
@@ -245,3 +235,47 @@ app.post('/rentals/return', upload.single('returnPhoto'), async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+// [신규 2] 사이트 설정 수정 (관리자용 - 텍스트 정보)
+app.post('/admin/settings', async (req, res) => {
+    const { businessName, address, contact, sitemapText } = req.body;
+    try {
+        await pool.execute(
+            'UPDATE site_settings SET business_name=?, address=?, contact=?, sitemap_text=? WHERE id=1',
+            [businessName, address, contact, sitemapText]
+        );
+        res.json({ message: '설정이 저장되었습니다.' });
+    } catch (error) { res.status(500).json({ error: '저장 실패' }); }
+});
+
+// [신규 3] 배너 이미지 업로드 (관리자용)
+app.post('/admin/banner', upload.single('bannerFile'), async (req, res) => {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: '파일이 없습니다.' });
+    try {
+        const imagePath = '/uploads/' + file.filename;
+        await pool.execute('UPDATE site_settings SET banner_image=? WHERE id=1', [imagePath]);
+        res.json({ message: '배너가 적용되었습니다.' });
+    } catch (error) { res.status(500).json({ error: '업로드 실패' }); }
+});
+
+// [신규 4] 배너 삭제 (텍스트 로고로 복귀)
+app.delete('/admin/banner', async (req, res) => {
+    try {
+        await pool.execute('UPDATE site_settings SET banner_image=NULL WHERE id=1');
+        res.json({ message: '배너가 삭제되었습니다.' });
+    } catch (error) { res.status(500).json({ error: '삭제 실패' }); }
+});
+
+// (기존 API들: 회원가입, 로그인, 공지, 일정, 대여, 반납 등은 위에 반드시 있어야 합니다!)
+// ...
+
+// [참고] 기존 대여 목록 API (그대로 둠)
+app.get('/rentals', async (req, res) => {
+    try { const [rows] = await pool.execute('SELECT * FROM rentals'); res.json(rows); } 
+    catch (error) { res.status(500).json({ error: error.message }); }
+});
+app.post('/rentals/rent', async (req, res) => { /* 기존 코드 유지 */ });
+app.post('/rentals/return', upload.single('returnPhoto'), async (req, res) => { /* 기존 코드 유지 */ });
+// ...
+
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });

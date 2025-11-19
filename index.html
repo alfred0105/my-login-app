@@ -2,15 +2,15 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>첨성(베타)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>첨성(베타)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header class="main-header">
         <div class="logo">
-            <h1>첨성</h1>
+            <h1 id="textLogo">첨성</h1>
+            <img id="bannerLogo" src="" alt="메인 배너" style="display: none; max-height: 50px;">
         </div>
         <div class="login">
             <button id="authBtn">로그인</button>
@@ -19,6 +19,7 @@
     </header>
 
     <main class="container">
+        
         <section class="left-column">
             <div class="schedule-box">
                 <h2>📅 주요 일정</h2>
@@ -29,6 +30,7 @@
         </section>
 
         <aside class="right-column">
+            
             <section class="notice-box">
                 <h2>📢 공지사항</h2>
                 <ul id="noticeList">
@@ -42,8 +44,28 @@
                     <li>로딩 중...</li>
                 </ul>
             </section>
+
         </aside>
+
     </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="biz-info">
+                <strong id="footerBizName">첨성 프로젝트</strong><br>
+                <span id="footerAddress">주소 미입력</span><br>
+                <span id="footerContact">Tel: 010-0000-0000</span>
+            </div>
+            <div class="sitemap">
+                <strong>Sitemap</strong>
+                <p id="footerSitemap">홈 | 공지사항 | 일정 | 물품대여</p>
+            </div>
+        </div>
+        <div class="copy">
+            &copy; 2025 Cheomseong. All rights reserved.
+        </div>
+    </footer>
+
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
@@ -79,6 +101,27 @@
             <div id="adminView" style="display: none; text-align: left;">
                 <h2 style="text-align: center;">관리자 모드</h2>
                 
+                <div class="admin-section" style="border: 2px solid #007BFF; background: #eef6ff;">
+                    <h3>⚙️ 사이트 설정</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">배너 이미지 변경:</label>
+                        <div style="display:flex; gap:5px;">
+                            <input type="file" id="bannerFile" accept="image/*" style="font-size:12px;">
+                            <button onclick="uploadBanner()" style="width:auto; font-size:12px; padding:5px 10px;">적용</button>
+                            <button onclick="deleteBanner()" style="width:auto; font-size:12px; background:#dc3545; padding:5px 10px;">삭제</button>
+                        </div>
+                    </div>
+
+                    <form id="settingsForm">
+                        <input type="text" id="editBizName" placeholder="상호명 (예: 첨성 프로젝트)" required>
+                        <input type="text" id="editAddress" placeholder="주소" required>
+                        <input type="text" id="editContact" placeholder="연락처" required>
+                        <textarea id="editSitemap" placeholder="사이트맵 내용 (예: 홈 | 공지사항...)" rows="2"></textarea>
+                        <button type="submit" style="background-color:#17a2b8;">정보 수정 저장</button>
+                    </form>
+                </div>
+
                 <div class="admin-section">
                     <h3>📢 공지사항 등록</h3>
                     <form id="noticeForm">
@@ -106,13 +149,15 @@
                 </div>
 
                 <h3>✅ 가입 승인 대기</h3>
-                <div id="pendingList" class="pending-list-box"></div>
+                <div id="pendingList" class="pending-list-box">
+                    </div>
                 
                 <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">닫기</button>
             </div>
 
         </div>
     </div>
+
 
     <div id="rentModal" class="modal-overlay">
         <div class="modal-content">
@@ -129,20 +174,25 @@
         </div>
     </div>
 
+
     <div id="returnModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" id="closeReturnModalBtn">&times;</span>
             <h2>물품 반납</h2>
             <p style="font-size: 13px; color: #666; margin-bottom: 15px; line-height: 1.4;">
-                본인 확인을 위해 학번을 입력하고<br><strong>반납 인증 사진</strong>을 꼭 올려주세요.
+                본인 확인을 위해 학번을 입력하고<br>
+                <strong>반납 인증 사진</strong>을 꼭 올려주세요.
             </p>
+            
             <form id="returnForm">
                 <input type="hidden" id="returnItemId">
                 <input type="text" id="returnStudentId" placeholder="대여 시 입력한 학번" required>
+                
                 <div style="text-align: left; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 5px;">
                     <label style="font-size: 12px; display: block; margin-bottom: 5px;">📸 반납 사진 촬영/업로드:</label>
                     <input type="file" id="returnPhoto" accept="image/*" required style="border: none; padding: 0; width: 100%;">
                 </div>
+
                 <button type="submit" style="background-color: #ffc107; color: #333; font-weight: bold;">반납하기</button>
             </form>
         </div>

@@ -33,6 +33,23 @@ const closeReturnModalBtn = document.getElementById('closeReturnModalBtn');
 const rentForm = document.getElementById('rentForm');
 const returnForm = document.getElementById('returnForm');
 
+const settingsForm = document.getElementById('settingsForm');
+const bannerFile = document.getElementById('bannerFile');
+const textLogo = document.getElementById('textLogo');
+const bannerLogo = document.getElementById('bannerLogo');
+
+// 푸터 요소들
+const footerBizName = document.getElementById('footerBizName');
+const footerAddress = document.getElementById('footerAddress');
+const footerContact = document.getElementById('footerContact');
+const footerSitemap = document.getElementById('footerSitemap');
+
+// 관리자 입력창들
+const editBizName = document.getElementById('editBizName');
+const editAddress = document.getElementById('editAddress');
+const editContact = document.getElementById('editContact');
+const editSitemap = document.getElementById('editSitemap');
+
 let adminBtn = null;
 
 
@@ -114,6 +131,37 @@ showLoginBtn.addEventListener('click', () => {
     registerView.style.display = 'none';
     loginView.style.display = 'block';
 });
+async function loadSettings() {
+    try {
+        const res = await fetch('/settings');
+        const data = await res.json();
+        
+        // A. 푸터 정보 적용
+        footerBizName.innerText = data.business_name || '첨성';
+        footerAddress.innerText = data.address || '';
+        footerContact.innerText = data.contact || '';
+        footerSitemap.innerText = data.sitemap_text || '';
+
+        // 관리자 폼에도 미리 채워넣기
+        if(document.getElementById('adminView').style.display === 'block') {
+            editBizName.value = data.business_name;
+            editAddress.value = data.address;
+            editContact.value = data.contact;
+            editSitemap.value = data.sitemap_text;
+        }
+
+        // B. 배너 로직 적용 (이미지 있으면 이미지, 없으면 글자)
+        if (data.banner_image) {
+            textLogo.style.display = 'none';
+            bannerLogo.src = data.banner_image;
+            bannerLogo.style.display = 'block';
+        } else {
+            textLogo.style.display = 'block';
+            bannerLogo.style.display = 'none';
+        }
+
+    } catch (err) { console.error('설정 로드 실패', err); }
+}
 
 
 // =========================================
@@ -266,7 +314,7 @@ window.deleteSchedule = async (id) => {
     try { await fetch(`/admin/schedule/${id}`, { method: 'DELETE' }); loadSchedules(); } catch(err) { alert('실패'); }
 };
 
-// 5-3. [★수정됨] 물품 대여 목록 (관리자 삭제 버튼 추가)
+// 3. [수정] 물품 대여 목록 (관리자 상세 정보 보기 추가)
 async function loadRentals() {
     try {
         const res = await fetch('/rentals');
@@ -278,22 +326,34 @@ async function loadRentals() {
 
         items.forEach(item => {
             const li = document.createElement('li');
+            // 스타일 조정 (관리자일 경우 내용이 많아져서 세로 정렬 허용)
             li.style.display = "flex";
             li.style.justifyContent = "space-between";
             li.style.alignItems = "center";
+            li.style.flexWrap = "wrap"; // 줄바꿈 허용
             li.style.padding = "12px 0";
             li.style.borderBottom = "1px solid #eee";
 
-            let leftContent = `<span>${item.item_name}</span>`;
+            let leftContent = `<div><span style="font-size:1rem; font-weight:bold;">${item.item_name}</span>`;
+            
+            // ★ 관리자라면 빌린 사람 정보 상세 표시
+            if (isAdmin && item.is_rented === 1) {
+                leftContent += `
+                    <span class="renter-info">
+                        👤 ${item.renter_name} (${item.renter_student_id})<br>
+                        📞 ${item.renter_phone || '번호없음'}
+                    </span>`;
+            }
+            leftContent += `</div>`;
+
             let rightContent = '';
 
             if (item.is_rented === 1) {
-                rightContent = `<button onclick="openReturnModal(${item.id})" style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">대여중 (반납하기)</button>`;
+                rightContent = `<button onclick="openReturnModal(${item.id})" style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">대여중 (반납)</button>`;
             } else {
                 rightContent = `<button onclick="openRentModal(${item.id}, '${item.item_name}')" style="background:#007BFF; color:white; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer;">대여하기</button>`;
             }
 
-            // ★ 관리자라면 삭제 버튼 추가
             if (isAdmin) {
                 rightContent += `<button onclick="deleteRentalItem(${item.id})" style="background:#dc3545; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; margin-left:8px;">X</button>`;
             }
@@ -424,7 +484,49 @@ scheduleForm.addEventListener('submit', async (e) => {
     } catch (err) { alert('오류'); }
 });
 
+// 텍스트 정보 저장
+settingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const res = await fetch('/admin/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                businessName: editBizName.value,
+                address: editAddress.value,
+                contact: editContact.value,
+                sitemapText: editSitemap.value
+            })
+        });
+        if (res.ok) { alert('저장되었습니다.'); loadSettings(); }
+    } catch (err) { alert('오류'); }
+});
+
+// 배너 업로드
+window.uploadBanner = async () => {
+    const file = bannerFile.files[0];
+    if (!file) return alert('파일을 선택해주세요.');
+    
+    const formData = new FormData();
+    formData.append('bannerFile', file);
+
+    try {
+        const res = await fetch('/admin/banner', { method: 'POST', body: formData });
+        if (res.ok) { alert('배너가 적용되었습니다.'); loadSettings(); }
+    } catch (err) { alert('오류'); }
+};
+
+// 배너 삭제
+window.deleteBanner = async () => {
+    if(!confirm('배너를 삭제하고 글자로 되돌리겠습니까?')) return;
+    try {
+        await fetch('/admin/banner', { method: 'DELETE' });
+        loadSettings();
+    } catch (err) { alert('오류'); }
+};
+
 // [8] 초기 로드
 loadNotices();
 loadSchedules();
 loadRentals();
+loadSettings();
