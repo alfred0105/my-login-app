@@ -21,17 +21,19 @@
     <main class="container">
         
         <section class="left-column">
-            <h2>일정</h2>
-            <div class="schedule-content">
-                <p>일정 데이터가 없습니다.</p>
-            </div> 
+            <h2>📅 주요 일정</h2>
+            <div class="schedule-box" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <ul id="scheduleList" style="list-style: none; padding: 0;">
+                    <li style="color:#888; padding:10px;">일정을 불러오는 중...</li>
+                </ul>
+            </div>
         </section>
 
         <aside class="right-column">
             <h2>공지사항</h2>
             <section class="notice-box">
                 <ul id="noticeList">
-                    <li>로딩 중...</li>
+                    <li style="color:#888;">로딩 중...</li>
                 </ul>
             </section>
 
@@ -46,6 +48,7 @@
         </aside>
 
     </main>
+
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
@@ -71,7 +74,7 @@
                     <input type="text" id="regUsername" placeholder="사용할 아이디" required>
                     <input type="password" id="regPassword" placeholder="비밀번호" required>
                     <input type="password" id="regPasswordConfirm" placeholder="비밀번호 확인" required>
-                    <button type="submit" style="background-color: #28a745;">가입 신청</button>
+                    <button type="submit" style="background-color: #28a745;">가입하기</button>
                 </form>
                 <p style="margin-top:15px; font-size:14px;">
                     이미 계정이 있나요? <span id="showLoginBtn" style="color:blue; cursor:pointer; font-weight:bold;">로그인</span>
@@ -81,20 +84,29 @@
             <div id="adminView" style="display: none; text-align: left;">
                 <h2 style="text-align: center;">관리자 모드</h2>
                 
-                <div style="background: #f1f1f1; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0;">📢 공지사항 쓰기</h3>
+                <div style="background: #f1f1f1; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <h3 style="font-size:16px; margin-bottom:5px;">📢 공지사항 쓰기</h3>
                     <form id="noticeForm">
                         <input type="text" id="noticeTitle" placeholder="제목" required style="margin-bottom: 5px;">
-                        <textarea id="noticeContent" placeholder="내용" rows="3" required style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;"></textarea>
-                        <button type="submit" style="background-color: #007BFF; margin-top: 5px;">등록하기</button>
+                        <textarea id="noticeContent" placeholder="내용" rows="2" required style="width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+                        <button type="submit" style="background-color: #007BFF; margin-top: 5px; padding: 5px;">공지 등록</button>
                     </form>
                 </div>
 
-                <h3 style="margin-bottom: 5px;">✅ 가입 승인 대기</h3>
-                <div id="pendingList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; background: #fff;">
+                <div style="background: #e8f0fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <h3 style="font-size:16px; margin-bottom:5px;">📅 일정 추가</h3>
+                    <form id="scheduleForm">
+                        <input type="text" id="schedTitle" placeholder="일정 이름 (예: 중간고사)" required style="margin-bottom: 5px;">
+                        <input type="date" id="schedDate" required style="width:100%; box-sizing:border-box; padding:8px; margin-bottom: 5px; border:1px solid #ccc; border-radius:5px;">
+                        <button type="submit" style="background-color: #6610f2; margin-top: 5px; padding: 5px;">일정 등록</button>
+                    </form>
+                </div>
+
+                <h3 style="font-size:16px; margin-bottom:5px;">✅ 가입 승인 대기</h3>
+                <div id="pendingList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; background: white; border-radius:5px;">
                     </div>
                 
-                <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">메인으로 돌아가기</button>
+                <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">닫기</button>
             </div>
 
         </div>
