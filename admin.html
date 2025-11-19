@@ -4,33 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지</title>
-    <style>
-        body { background-color: #f4f6f9; font-family: sans-serif; margin: 0; padding: 20px; }
-        .admin-container { max-width: 900px; margin: 0 auto; }
+    <link rel="stylesheet" href="style.css"> <style>
+        /* 관리자 페이지 전용 추가 스타일 */
+        body { background-color: #f4f6f9; padding: 20px; }
+        .admin-container { max-width: 1000px; margin: 0 auto; }
         .admin-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        h3 { border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #333; font-weight: bold; }
+        .admin-card h3 { border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #333; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
         
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold; }
+        /* 폼 요소 스타일 override */
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold; }
         
         /* 테이블 스타일 */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; }
-        .photo-btn { background: #17a2b8; padding: 5px 10px; font-size: 0.8rem; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; font-weight: bold; }
+        .photo-btn { background: #17a2b8; padding: 4px 8px; border-radius: 3px; text-decoration: none; color: white; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
-        <a href="/" class="back-btn">← 메인으로 돌아가기</a>
-        <h1>⚙️ 관리자 대시보드</h1>
+        <a href="/" class="back-btn">← 메인 화면으로 돌아가기</a>
+        <h1 style="margin-bottom: 30px;">⚙️ 관리자 대시보드</h1>
 
         <div class="admin-card">
             <h3>🎨 메인 배너 설정</h3>
-            <div style="display:flex; gap:10px;">
-                <input type="file" id="bannerFile" accept="image/*">
+            <label>배너 이미지 업로드 (설정 시 텍스트 로고 대신 표시됩니다)</label>
+            <div style="display:flex; gap:10px; align-items: center;">
+                <input type="file" id="bannerFile" accept="image/*" style="margin:0;">
                 <button onclick="uploadBanner()" style="background:#007BFF;">적용</button>
                 <button onclick="deleteBanner()" style="background:#dc3545;">삭제</button>
             </div>
@@ -38,22 +41,32 @@
 
         <div class="admin-card">
             <h3>✅ 회원가입 승인 대기</h3>
-            <div id="pendingList"></div>
+            <div id="pendingList">로딩 중...</div>
         </div>
 
         <div class="admin-card">
             <h3>🎒 대여 물품 관리</h3>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="newItemName" placeholder="새 물품명" style="margin:0;">
-                <button onclick="addRentalItem()" style="background:#ffc107; color:black;">추가</button>
+            
+            <div style="background: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h4>📦 현재 대여 현황 (실시간)</h4>
+                <div id="currentRentals">로딩 중...</div>
             </div>
-            <h4>📦 현재 대여 현황</h4>
-            <div id="currentRentals">로딩 중...</div>
+
+            <h4>새 물품 추가</h4>
+            <form id="addRentalForm" style="display:flex; gap:10px;">
+                <input type="text" id="newItemName" placeholder="물품명 (예: 우산, 멀티탭)" required style="margin:0;">
+                <button type="submit" style="background:#ffc107; color:black; border:none; white-space:nowrap;">추가하기</button>
+            </form>
+            
+            <h4 style="margin-top:20px;">전체 물품 목록 (삭제 관리)</h4>
+            <ul id="adminRentalList" style="list-style:none; padding:0; border:1px solid #eee; border-radius:5px;">
+                <li style="padding:10px; text-align:center;">로딩 중...</li>
+            </ul>
         </div>
 
         <div class="admin-card">
             <h3>🗂️ 반납 기록 (최근 90일)</h3>
-            <p style="font-size:0.8rem; color:#666;">* 반납 시 사진과 대여 기간을 확인할 수 있습니다. 90일이 지나면 자동 삭제됩니다.</p>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">* 반납 인증 사진과 대여 기간을 확인할 수 있습니다.</p>
             <div style="overflow-x: auto;">
                 <table id="logTable">
                     <thead>
@@ -62,7 +75,7 @@
                             <th>빌린사람</th>
                             <th>기간</th>
                             <th>반납일</th>
-                            <th>사진</th>
+                            <th>인증샷</th>
                         </tr>
                     </thead>
                     <tbody id="logList"></tbody>
@@ -73,24 +86,27 @@
         <div class="admin-card">
             <h3>📝 컨텐츠 관리</h3>
             <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                <div style="flex:1;">
-                    <h4>공지사항 등록</h4>
-                    <input type="text" id="noticeTitle" placeholder="제목">
-                    <textarea id="noticeContent" placeholder="내용" rows="3"></textarea>
-                    <button onclick="addNotice()" style="background:#28a745; width:100%;">등록</button>
-                </div>
-                <div style="flex:1;">
-                    <h4>일정 추가</h4>
-                    <input type="text" id="schedTitle" placeholder="일정명">
-                    <input type="date" id="schedDate">
-                    <button onclick="addSchedule()" style="background:#6610f2; width:100%;">추가</button>
-                </div>
+                <div style="flex:1; min-width: 300px;">
+                    <h4>📢 공지사항 등록</h4>
+                    <form id="noticeForm">
+                        <input type="text" id="noticeTitle" placeholder="제목" required>
+                        <textarea id="noticeContent" placeholder="내용" rows="3" required></textarea>
+                        <button type="submit" style="background:#28a745; width:100%;">등록</button>
+                    </form>
+                    </div>
+                <div style="flex:1; min-width: 300px;">
+                    <h4>📅 일정 추가</h4>
+                    <form id="scheduleForm">
+                        <input type="text" id="schedTitle" placeholder="일정명" required>
+                        <input type="date" id="schedDate" required>
+                        <button type="submit" style="background:#6610f2; width:100%;">추가</button>
+                    </form>
+                     </div>
             </div>
         </div>
 
         <div class="admin-card" style="border: 2px solid #17a2b8;">
             <h3>🛠️ 사이트 하단(Footer) 정보 수정</h3>
-            <p style="font-size:0.9rem; color:red;">* 수정 후 '저장' 버튼을 꼭 눌러주세요.</p>
             <form id="settingsForm">
                 <label>상호명 (Business Name)</label>
                 <input type="text" id="editBizName" placeholder="예: 첨성 프로젝트">
@@ -109,7 +125,8 @@
         </div>
 
     </div>
-<div id="editNoticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+
+    <div id="editNoticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
         <div style="background:white; padding:30px; border-radius:10px; width:90%; max-width:400px;">
             <h3>공지사항 수정</h3>
             <input type="hidden" id="editNoticeId">
@@ -134,6 +151,7 @@
             </div>
         </div>
     </div>
+
     <script src="admin.js"></script>
 </body>
 </html>

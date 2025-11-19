@@ -1,8 +1,8 @@
 /* style.css */
 
-/* 1. 기본 설정 (푸터 하단 고정을 위한 필수 설정) */
+/* 1. 기본 설정 (푸터 하단 고정) */
 html, body {
-    height: 100%;       /* 화면 전체 높이 사용 */
+    height: 100%;
     margin: 0;
 }
 
@@ -10,14 +10,18 @@ body {
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
     background-color: #f4f7f6;
     color: #333;
-    /* ★ 핵심: 세로 방향 FlexLayout 설정 */
     display: flex;
     flex-direction: column;
 }
 
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* 2. 헤더 */
 .main-header {
-    /* (기존 코드 유지) */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,20 +32,7 @@ body {
     top: 0;
     z-index: 100;
 }
-/* 3. 메인 컨테이너 (푸터 밀어내기) */
-.container {
-    /* ★ 핵심: 남은 공간을 모두 차지해서 푸터를 아래로 밈 */
-    flex: 1; 
-    
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px;
-    max-width: 1200px;
-    width: 100%;      /* 가로폭 꽉 차게 */
-    box-sizing: border-box; /* 패딩 포함 계산 */
-    margin: 0 auto;
-}
+
 .logo h1 {
     margin: 0;
     color: #007BFF;
@@ -58,41 +49,35 @@ body {
     font-weight: bold;
     transition: 0.2s;
 }
-.login button:hover {
-    background-color: #0056b3;
-}
+.login button:hover { background-color: #0056b3; }
 
-/* 3. 레이아웃 (반응형 핵심) */
+/* 3. 메인 레이아웃 */
 .container {
+    flex: 1; /* 푸터를 아래로 밀어냄 */
     display: flex;
-    flex-wrap: wrap; /* 공간 부족하면 줄바꿈 */
+    flex-wrap: wrap;
     gap: 20px;
     padding: 20px;
     max-width: 1200px;
-    margin: 0 auto; /* 중앙 정렬 */
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .left-column, .right-column {
-    flex: 1; /* 1:1 비율로 공간 차지 */
-    min-width: 300px; /* 너무 좁아지지 않게 방지 */
+    flex: 1;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-/* ★ 모바일 전용 스타일 (화면 폭이 768px 이하일 때) */
 @media (max-width: 768px) {
-    .container {
-        flex-direction: column; /* 가로 -> 세로 배치 변경 */
-        padding: 10px;
-    }
-    .left-column, .right-column {
-        width: 100%; /* 꽉 차게 */
-        min-width: auto;
-    }
+    .container { flex-direction: column; padding: 10px; }
+    .left-column, .right-column { width: 100%; min-width: auto; }
 }
 
-/* 4. 박스 디자인 (카드 형태) */
+/* 4. 박스 디자인 */
 .schedule-box, .notice-box, .rental-box {
     background-color: white;
     padding: 20px;
@@ -117,14 +102,44 @@ li {
 }
 li:last-child { border-bottom: none; }
 
-/* 5. 모달 (팝업창) 디자인 */
+/* 5. 푸터 디자인 */
+.main-footer {
+    background-color: #333;
+    color: #fff;
+    padding: 40px 20px;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.biz-info strong, .sitemap strong { font-size: 1.1rem; color: #ddd; }
+.biz-info span { display: block; margin-top: 5px; font-size: 0.9rem; color: #aaa; }
+.sitemap p { margin-top: 5px; font-size: 0.9rem; color: #aaa; line-height: 1.6; }
+
+.copy {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* 6. 모달 디자인 */
 .modal-overlay {
-    display: none; /* 평소엔 숨김 */
+    display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정 */
-    backdrop-filter: blur(4px); /* 블러 효과 */
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -139,7 +154,7 @@ li:last-child { border-bottom: none; }
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     text-align: center;
     position: relative;
-    max-height: 90vh; /* 화면보다 길면 스크롤 */
+    max-height: 90vh;
     overflow-y: auto;
 }
 
@@ -153,7 +168,6 @@ li:last-child { border-bottom: none; }
 }
 .close-btn:hover { color: #333; }
 
-/* 모달 내부 입력창 & 버튼 */
 .modal-content input, .modal-content textarea {
     width: 100%;
     padding: 12px;
@@ -178,44 +192,5 @@ li:last-child { border-bottom: none; }
 }
 .modal-content button:hover { opacity: 0.9; }
 
-.modal-footer-text {
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #666;
-}
-.modal-footer-text span {
-    color: #007BFF;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-/* 관리자 페이지 내부 스타일 */
-.admin-section {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    text-align: left;
-}
-.admin-section h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    color: #555;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-}
-
-.pending-list-box {
-    max-height: 150px; 
-    overflow-y: auto; 
-    border: 1px solid #eee; 
-    padding: 5px;
-    background: white;
-    border-radius: 5px;
-}
-.main-footer {
-    background-color: #333;
-    color: #fff;
-    padding: 40px 20px; /* 높이 좀 더 여유있게 */
-    margin-top: auto;   /* 혹시 모를 안전장치 */
-}
+.modal-footer-text { margin-top: 15px; font-size: 0.9rem; color: #666; }
+.modal-footer-text span { color: #007BFF; cursor: pointer; font-weight: bold; }
