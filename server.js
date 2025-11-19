@@ -108,6 +108,25 @@ app.delete('/admin/banner', async (req, res) => {
     await pool.execute('UPDATE site_settings SET banner_image=NULL WHERE id=1');
     res.json({message:'삭제됨'});
 });
+// [신규] 공지사항 수정 (PUT)
+app.put('/admin/notice/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    try {
+        await pool.execute('UPDATE notices SET title = ?, content = ? WHERE id = ?', [title, content, id]);
+        res.json({ message: '수정되었습니다.' });
+    } catch (error) { res.status(500).json({ error: '수정 실패' }); }
+});
+
+// [신규] 일정 수정 (PUT)
+app.put('/admin/schedule/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, eventDate } = req.body;
+    try {
+        await pool.execute('UPDATE schedules SET title = ?, event_date = ? WHERE id = ?', [title, eventDate, id]);
+        res.json({ message: '수정되었습니다.' });
+    } catch (error) { res.status(500).json({ error: '수정 실패' }); }
+});
 
 // 승인, 공지, 일정 관리
 app.get('/admin/pending-users', async (req, res) => { const [r] = await pool.execute('SELECT * FROM users WHERE is_approved=0'); res.json(r); });

@@ -1,21 +1,23 @@
 /* style.css */
 
-/* 1. 기본 설정 */
-body {
+/* 1. 기본 설정 (푸터 하단 고정을 위한 필수 설정) */
+html, body {
+    height: 100%;       /* 화면 전체 높이 사용 */
     margin: 0;
+}
+
+body {
     font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
     background-color: #f4f7f6;
     color: #333;
+    /* ★ 핵심: 세로 방향 FlexLayout 설정 */
+    display: flex;
+    flex-direction: column;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-/* 2. 헤더 (PC/모바일 공통) */
+/* 2. 헤더 */
 .main-header {
+    /* (기존 코드 유지) */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,9 +26,22 @@ ul {
     border-bottom: 1px solid #ddd;
     position: sticky;
     top: 0;
-    z-index: 100; /* 항상 위에 떠있기 */
+    z-index: 100;
 }
-
+/* 3. 메인 컨테이너 (푸터 밀어내기) */
+.container {
+    /* ★ 핵심: 남은 공간을 모두 차지해서 푸터를 아래로 밈 */
+    flex: 1; 
+    
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    width: 100%;      /* 가로폭 꽉 차게 */
+    box-sizing: border-box; /* 패딩 포함 계산 */
+    margin: 0 auto;
+}
 .logo h1 {
     margin: 0;
     color: #007BFF;
@@ -197,4 +212,10 @@ li:last-child { border-bottom: none; }
     padding: 5px;
     background: white;
     border-radius: 5px;
+}
+.main-footer {
+    background-color: #333;
+    color: #fff;
+    padding: 40px 20px; /* 높이 좀 더 여유있게 */
+    margin-top: auto;   /* 혹시 모를 안전장치 */
 }

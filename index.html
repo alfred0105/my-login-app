@@ -141,6 +141,18 @@
             </form>
         </div>
     </div>
+    <div id="noticeDetailModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: left;">
+            <span class="close-btn" id="closeNoticeModalBtn">&times;</span>
+            <h2 id="detailTitle" style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;"></h2>
+            <p id="detailDate" style="font-size: 0.8rem; color: #888; margin-bottom: 20px;"></p>
+            <div id="detailContent" style="white-space: pre-wrap; line-height: 1.6; min-height: 100px;"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="document.getElementById('noticeDetailModal').style.display='none'" style="background: #6c757d;">닫기</button>
+            </div>
+        </div>
+    </div>
+    
 
     <script src="script.js"></script>
 </body>

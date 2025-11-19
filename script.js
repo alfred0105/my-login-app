@@ -28,6 +28,13 @@ const closeReturnModalBtn = document.getElementById('closeReturnModalBtn');
 const rentForm = document.getElementById('rentForm');
 const returnForm = document.getElementById('returnForm');
 
+// [추가 요소 선택] 공지사항 상세 모달
+const noticeDetailModal = document.getElementById('noticeDetailModal');
+const closeNoticeModalBtn = document.getElementById('closeNoticeModalBtn');
+const detailTitle = document.getElementById('detailTitle');
+const detailDate = document.getElementById('detailDate');
+const detailContent = document.getElementById('detailContent');
+
 // 설정 관련 요소 (푸터/배너 표시용)
 const footerBizName = document.getElementById('footerBizName');
 const footerAddress = document.getElementById('footerAddress');
@@ -102,6 +109,10 @@ authBtn.addEventListener('click', () => {
 closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
 closeRentModalBtn.addEventListener('click', () => { rentModal.style.display = 'none'; });
 closeReturnModalBtn.addEventListener('click', () => { returnModal.style.display = 'none'; });
+
+// 모달 닫기 이벤트
+closeNoticeModalBtn.addEventListener('click', () => noticeDetailModal.style.display = 'none');
+window.addEventListener('click', (e) => { if (e.target === noticeDetailModal) noticeDetailModal.style.display = 'none'; });
 
 window.addEventListener('click', (e) => {
     if (e.target === modal) modal.style.display = 'none';
@@ -241,7 +252,83 @@ async function loadRentals() {
         });
     } catch (err) { rentalList.innerHTML = '<li>목록 로딩 실패</li>'; }
 }
+// [수정됨] 5-1. 공지사항 불러오기 (더보기 & 팝업 기능 적용)
+let allNotices = []; // 전체 공지 저장용
+let showCount = 5;   // 처음에 보여줄 개수
 
+async function loadNotices() {
+    try {
+        const res = await fetch('/notices');
+        allNotices = await res.json();
+        
+        renderNotices(); // 화면 그리기 함수 호출
+    } catch (err) { noticeList.innerHTML = '<li>불러오기 실패</li>'; }
+}
+
+function renderNotices() {
+    noticeList.innerHTML = '';
+    const displayList = allNotices.slice(0, showCount); // 현재 개수만큼만 자름
+
+    if (allNotices.length === 0) {
+        noticeList.innerHTML = '<li style="padding:10px; text-align:center; color:#888;">등록된 공지사항이 없습니다.</li>';
+        return;
+    }
+
+    displayList.forEach(notice => {
+        const li = document.createElement('li');
+        li.style.padding = "10px 5px";
+        li.style.borderBottom = "1px solid #eee";
+        li.style.cursor = "pointer"; // 클릭 가능 표시
+        
+        // 클릭 시 상세 모달 열기
+        li.onclick = () => openNoticeDetail(notice);
+
+        li.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; color:#333;">${notice.title}</span>
+                <span style="font-size:11px; color:#aaa;">${new Date(notice.created_at).toLocaleDateString()}</span>
+            </div>
+            <div style="font-size:0.9rem; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:5px;">
+                ${notice.content}
+            </div>
+        `;
+        noticeList.appendChild(li);
+    });
+
+    // [더보기 버튼 로직]
+    // 기존 더보기 버튼이 있으면 삭제 (중복 방지)
+    const existingBtn = document.getElementById('moreNoticeBtn');
+    if (existingBtn) existingBtn.remove();
+
+    // 아직 보여줄게 남았으면 버튼 추가
+    if (showCount < allNotices.length) {
+        const moreBtn = document.createElement('div');
+        moreBtn.id = 'moreNoticeBtn';
+        moreBtn.innerText = "더보기 (+)";
+        moreBtn.style.textAlign = "center";
+        moreBtn.style.padding = "10px";
+        moreBtn.style.cursor = "pointer";
+        moreBtn.style.color = "#007BFF";
+        moreBtn.style.fontSize = "0.9rem";
+        moreBtn.style.fontWeight = "bold";
+        
+        moreBtn.onclick = () => {
+            showCount += 5; // 5개씩 더 보여줌
+            renderNotices(); // 다시 그리기
+        };
+        
+        // 리스트 뒤에 버튼 붙이기
+        noticeList.parentNode.appendChild(moreBtn);
+    }
+}
+
+// [신규] 공지 상세 모달 열기 함수
+function openNoticeDetail(notice) {
+    detailTitle.innerText = notice.title;
+    detailDate.innerText = new Date(notice.created_at).toLocaleString();
+    detailContent.innerText = notice.content; // 줄바꿈 등 내용 그대로
+    noticeDetailModal.style.display = 'flex';
+}
 
 // =========================================
 // [5] 대여 및 반납, 로그인 처리
