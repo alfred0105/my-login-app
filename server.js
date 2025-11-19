@@ -160,6 +160,17 @@ app.delete('/admin/schedule/:id', async (req, res) => {
         res.status(500).json({ error: '삭제 실패' });
     }
 });
+// [추가] 일정 수정 (관리자용)
+app.put('/admin/schedule/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, eventDate } = req.body;
+    try {
+        await pool.execute('UPDATE schedules SET title = ?, event_date = ? WHERE id = ?', [title, eventDate, id]);
+        res.json({ message: '수정되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '수정 실패' });
+    }
+});
 
 
 // =========================================
@@ -187,7 +198,7 @@ app.get('/schedules', async (req, res) => {
 });
 
 
-// 서버 시작
+// 서버 시
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
