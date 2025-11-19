@@ -28,6 +28,7 @@ if (storedInfo) {
     updateLoginState(true, storedInfo, storedId);
 }
 
+
 function updateLoginState(isLoggedIn, infoText = "", userId = "") {
     if (isLoggedIn) {
         authBtn.innerText = "로그아웃";
@@ -224,5 +225,72 @@ registerForm.addEventListener('submit', async (e) => {
     } catch (err) {
         console.error(err);
         alert("서버 오류가 발생했습니다.");
+    }
+});
+// --- [6] 공지사항 기능 ---
+
+// 1. 공지사항 불러오기 (페이지 로드 시 자동 실행)
+async function loadNotices() {
+    try {
+        const res = await fetch('/notices');
+        const notices = await res.json();
+
+        // 목록 초기화
+        noticeList.innerHTML = '';
+
+        if (notices.length === 0) {
+            noticeList.innerHTML = '<li>등록된 공지사항이 없습니다.</li>';
+            return;
+        }
+
+        // 최신 5개만 보여주기 (원하면 slice 제거)
+        notices.slice(0, 5).forEach(notice => {
+            const li = document.createElement('li');
+            // 제목 클릭 시 내용 보이게 (간단 구현)
+            li.innerHTML = `
+                <strong style="cursor:pointer;" onclick="alert('${notice.content.replace(/\n/g, '\\n')}')">
+                    ${notice.title}
+                </strong>
+                <span style="font-size:11px; color:#888; float:right;">${new Date(notice.created_at).toLocaleDateString()}</span>
+            `;
+            noticeList.appendChild(li);
+        });
+
+    } catch (err) {
+        console.error(err);
+        noticeList.innerHTML = '<li>불러오기 실패</li>';
+    }
+}
+
+// 페이지 시작하자마자 공지사항 불러오기!
+loadNotices();
+
+
+// 2. 공지사항 등록하기 (관리자)
+noticeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('noticeTitle').value;
+    const content = document.getElementById('noticeContent').value;
+
+    try {
+        const res = await fetch('/admin/notice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content })
+        });
+
+        if (res.ok) {
+            alert('공지사항이 등록되었습니다.');
+            // 입력창 비우기
+            document.getElementById('noticeTitle').value = '';
+            document.getElementById('noticeContent').value = '';
+            // 목록 새로고침
+            loadNotices();
+        } else {
+            alert('등록 실패');
+        }
+    } catch (err) {
+        alert('서버 오류');
     }
 });

@@ -96,3 +96,29 @@ app.post('/admin/approve', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+// ... 기존 코드들 ...
+
+// [추가 1] 공지사항 목록 가져오기 (누구나 볼 수 있음)
+app.get('/notices', async (req, res) => {
+    try {
+        // 최신순(DESC)으로 정렬해서 가져오기
+        const [rows] = await pool.execute('SELECT * FROM notices ORDER BY created_at DESC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: '공지사항 로딩 실패' });
+    }
+});
+
+// [추가 2] 공지사항 작성하기 (관리자만)
+app.post('/admin/notice', async (req, res) => {
+    const { title, content } = req.body;
+    try {
+        const sql = 'INSERT INTO notices (title, content) VALUES (?, ?)';
+        await pool.execute(sql, [title, content]);
+        res.json({ message: '공지사항이 등록되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '등록 실패' });
+    }
+});
+
+// ... app.listen ...
