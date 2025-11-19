@@ -9,10 +9,10 @@ const PORT = process.env.PORT || 3000;
 
 // [1] 파일 업로드 설정
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) { fs.mkdirSync(uploadDir); }
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, 'uploads/'); },
+    destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
         cb(null, Date.now() + '-' + file.originalname);
@@ -36,246 +36,155 @@ const pool = mysql.createPool({
     connectionLimit: 10
 });
 
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+// ★ [신규] 90일 지난 반납 기록 자동 삭제 함수
+async function deleteOldLogs() {
+    try {
+        console.log('🧹 90일 지난 기록 청소 중...');
+        // returned_at이 90일 전보다 오래된 데이터 삭제
+        await pool.execute('DELETE FROM rental_logs WHERE returned_at < NOW() - INTERVAL 90 DAY');
+        console.log('✨ 청소 완료!');
+    } catch (error) {
+        console.error('청소 실패:', error);
+    }
+}
+// 서버 켜질 때 1번 실행 + 하루(24시간)마다 실행
+deleteOldLogs();
+setInterval(deleteOldLogs, 24 * 60 * 60 * 1000);
 
 
-// =========================================
-// [3] 기본 라우트
-// =========================================
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// [3] 기본 라우트 & 기존 API들
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))); // 관리자 페이지
 
-
-// =========================================
-// [4] 회원가입 & 로그인 (승인 시스템)
-// =========================================
+// 회원가입/로그인
 app.post('/register', async (req, res) => {
     const { username, password, studentId, name } = req.body;
     try {
-        const sql = 'INSERT INTO users (username, password, student_id, name) VALUES (?, ?, ?, ?)';
-        await pool.execute(sql, [username, password, studentId, name]);
-        res.json({ message: '회원가입 신청 완료! 관리자 승인 후 이용 가능합니다.' });
-    } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') {
-            res.status(400).json({ error: '이미 존재하는 아이디입니다.' });
-        } else {
-            res.status(500).json({ error: '서버 오류 발생' });
-        }
-    }
+        await pool.execute('INSERT INTO users (username, password, student_id, name) VALUES (?, ?, ?, ?)', [username, password, studentId, name]);
+        res.json({ message: '가입 신청 완료' });
+    } catch (error) { res.status(500).json({ error: '오류 발생' }); }
 });
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
-        const [rows] = await pool.execute(sql, [username, password]);
-
+        const [rows] = await pool.execute('SELECT * FROM users WHERE username = ? AND password = ?', [username, password]);
         if (rows.length > 0) {
-            const user = rows[0];
-            if (user.is_approved === 0) {
-                return res.status(403).json({ error: '관리자 승인 대기 중입니다.' });
-            }
-            res.json({ 
-                message: '로그인 성공',
-                studentId: user.student_id,
-                name: user.name,
-                username: user.username
-            });
-        } else {
-            res.status(400).json({ error: '아이디 또는 비밀번호가 틀렸습니다.' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: '서버 오류 발생' });
-    }
+            if (rows[0].is_approved === 0) return res.status(403).json({ error: '승인 대기 중' });
+            res.json({ message: '성공', studentId: rows[0].student_id, name: rows[0].name, username: rows[0].username });
+        } else res.status(400).json({ error: '정보 불일치' });
+    } catch (error) { res.status(500).json({ error: '오류' }); }
 });
 
-
-// =========================================
-// [5] 관리자 기능 (승인, 공지, 일정, ★물품관리★)
-// =========================================
-
-// 5-1. 유저 승인 관련
-app.get('/admin/pending-users', async (req, res) => {
-    try {
-        const [rows] = await pool.execute('SELECT id, username, student_id, name FROM users WHERE is_approved = 0');
-        res.json(rows);
-    } catch (error) { res.status(500).json({ error: '실패' }); }
+// [4] 관리자 기능
+app.get('/settings', async (req, res) => {
+    try { const [rows] = await pool.execute('SELECT * FROM site_settings WHERE id = 1'); res.json(rows[0]); } 
+    catch (error) { res.status(500).json({ error: '로딩 실패' }); }
 });
 
-app.post('/admin/approve', async (req, res) => {
-    const { username } = req.body;
-    try {
-        await pool.execute('UPDATE users SET is_approved = 1 WHERE username = ?', [username]);
-        res.json({ message: '승인 완료' });
-    } catch (error) { res.status(500).json({ error: '실패' }); }
-});
-
-// 5-2. 공지사항 관리
-app.post('/admin/notice', async (req, res) => {
-    const { title, content } = req.body;
-    try {
-        await pool.execute('INSERT INTO notices (title, content) VALUES (?, ?)', [title, content]);
-        res.json({ message: '등록 완료' });
-    } catch (error) { res.status(500).json({ error: '실패' }); }
-});
-
-app.delete('/admin/notice/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.execute('DELETE FROM notices WHERE id = ?', [id]);
-        res.json({ message: '삭제 완료' });
-    } catch (error) { res.status(500).json({ error: '실패' }); }
-});
-
-// 5-3. 일정 관리
-app.post('/admin/schedule', async (req, res) => {
-    const { title, eventDate } = req.body;
-    try {
-        await pool.execute('INSERT INTO schedules (title, event_date) VALUES (?, ?)', [title, eventDate]);
-        res.json({ message: '등록 완료' });
-    } catch (error) { res.status(500).json({ error: '실패' }); }
-});
-
-app.delete('/admin/schedule/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.execute('DELETE FROM schedules WHERE id = ?', [id]);
-        res.json({ message: '삭제 완료' });
-    } catch (error) { res.status(500).json({ error: '실패' }); }
-});
-
-// 5-4. [★추가됨] 물품 추가/삭제 (관리자용)
-app.post('/admin/rental-item', async (req, res) => {
-    const { itemName } = req.body;
-    try {
-        // 새 물품 추가 (기본상태: 대여가능(0))
-        await pool.execute('INSERT INTO rentals (item_name) VALUES (?)', [itemName]);
-        res.json({ message: '물품이 추가되었습니다.' });
-    } catch (error) { res.status(500).json({ error: '추가 실패' }); }
-});
-
-app.delete('/admin/rental-item/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        // 물품 삭제
-        await pool.execute('DELETE FROM rentals WHERE id = ?', [id]);
-        res.json({ message: '물품이 삭제되었습니다.' });
-    } catch (error) { res.status(500).json({ error: '삭제 실패' }); }
-});
-
-
-// =========================================
-// [6] 조회 기능 (공지, 일정, 물품목록)
-// =========================================
-app.get('/notices', async (req, res) => {
-    try {
-        const [rows] = await pool.execute('SELECT * FROM notices ORDER BY created_at DESC');
-        res.json(rows);
-    } catch (error) { res.status(500).json({ error: '로딩 실패' }); }
-});
-
-app.get('/schedules', async (req, res) => {
-    try {
-        const [rows] = await pool.execute('SELECT * FROM schedules ORDER BY event_date ASC');
-        res.json(rows);
-    } catch (error) { res.status(500).json({ error: '로딩 실패' }); }
-});
-
-app.get('/rentals', async (req, res) => {
-    try {
-        const [rows] = await pool.execute('SELECT * FROM rentals');
-        res.json(rows);
-    } catch (error) { res.status(500).json({ error: '로딩 실패' }); }
-});
-
-
-// =========================================
-// [7] 물품 대여/반납 시스템
-// =========================================
-app.post('/rentals/rent', async (req, res) => {
-    const { id, renterName, renterStudentId, renterPhone } = req.body;
-    try {
-        const [rows] = await pool.execute('SELECT is_rented FROM rentals WHERE id = ?', [id]);
-        if (rows.length > 0 && rows[0].is_rented === 1) {
-            return res.status(400).json({ error: '이미 대여중인 물품입니다.' });
-        }
-        const sql = `UPDATE rentals SET is_rented = 1, renter_name = ?, renter_student_id = ?, renter_phone = ?, return_image = NULL WHERE id = ?`;
-        await pool.execute(sql, [renterName, renterStudentId, renterPhone, id]);
-        res.json({ message: '대여 완료되었습니다.' });
-    } catch (error) {
-        res.status(500).json({ error: '대여 실패' });
-    }
-});
-
-app.post('/rentals/return', upload.single('returnPhoto'), async (req, res) => {
-    const { id, confirmStudentId } = req.body;
-    const file = req.file; 
-
-    if (!file) return res.status(400).json({ error: '반납 인증 사진이 필요합니다.' });
-
-    try {
-        const [rows] = await pool.execute('SELECT renter_student_id FROM rentals WHERE id = ?', [id]);
-        if (rows.length === 0) return res.status(400).json({ error: '물품이 존재하지 않습니다.' });
-        
-        if (rows[0].renter_student_id !== confirmStudentId) {
-            return res.status(403).json({ error: '대여 시 입력한 학번과 일치하지 않습니다.' });
-        }
-
-        const imagePath = '/uploads/' + file.filename;
-        const sql = `UPDATE rentals SET is_rented = 0, renter_name = NULL, renter_student_id = NULL, renter_phone = NULL, return_image = ? WHERE id = ?`;
-        await pool.execute(sql, [imagePath, id]);
-
-        res.json({ message: '반납 확인되었습니다.' });
-    } catch (error) {
-        res.status(500).json({ error: '반납 처리 중 오류가 발생했습니다.' });
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-// [신규 2] 사이트 설정 수정 (관리자용 - 텍스트 정보)
+// ★ 수정됨: 설정 변경 (디버깅 로그 추가)
 app.post('/admin/settings', async (req, res) => {
     const { businessName, address, contact, sitemapText } = req.body;
+    console.log('설정 변경 요청:', req.body); // 로그 확인용
     try {
         await pool.execute(
             'UPDATE site_settings SET business_name=?, address=?, contact=?, sitemap_text=? WHERE id=1',
             [businessName, address, contact, sitemapText]
         );
-        res.json({ message: '설정이 저장되었습니다.' });
-    } catch (error) { res.status(500).json({ error: '저장 실패' }); }
+        res.json({ message: '저장되었습니다.' });
+    } catch (error) { 
+        console.error(error);
+        res.status(500).json({ error: '저장 실패' }); 
+    }
 });
 
-// [신규 3] 배너 이미지 업로드 (관리자용)
 app.post('/admin/banner', upload.single('bannerFile'), async (req, res) => {
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: '파일이 없습니다.' });
-    try {
-        const imagePath = '/uploads/' + file.filename;
-        await pool.execute('UPDATE site_settings SET banner_image=? WHERE id=1', [imagePath]);
-        res.json({ message: '배너가 적용되었습니다.' });
-    } catch (error) { res.status(500).json({ error: '업로드 실패' }); }
+    if(!req.file) return res.status(400).json({error:'파일없음'});
+    const path = '/uploads/' + req.file.filename;
+    await pool.execute('UPDATE site_settings SET banner_image=? WHERE id=1', [path]);
+    res.json({message:'배너 적용됨'});
 });
-
-// [신규 4] 배너 삭제 (텍스트 로고로 복귀)
 app.delete('/admin/banner', async (req, res) => {
+    await pool.execute('UPDATE site_settings SET banner_image=NULL WHERE id=1');
+    res.json({message:'삭제됨'});
+});
+
+// 승인, 공지, 일정 관리
+app.get('/admin/pending-users', async (req, res) => { const [r] = await pool.execute('SELECT * FROM users WHERE is_approved=0'); res.json(r); });
+app.post('/admin/approve', async (req, res) => { await pool.execute('UPDATE users SET is_approved=1 WHERE username=?', [req.body.username]); res.json({msg:'ok'}); });
+app.post('/admin/notice', async (req, res) => { await pool.execute('INSERT INTO notices (title, content) VALUES (?, ?)', [req.body.title, req.body.content]); res.json({msg:'ok'}); });
+app.delete('/admin/notice/:id', async (req, res) => { await pool.execute('DELETE FROM notices WHERE id=?', [req.params.id]); res.json({msg:'ok'}); });
+app.post('/admin/schedule', async (req, res) => { await pool.execute('INSERT INTO schedules (title, event_date) VALUES (?, ?)', [req.body.title, req.body.eventDate]); res.json({msg:'ok'}); });
+app.delete('/admin/schedule/:id', async (req, res) => { await pool.execute('DELETE FROM schedules WHERE id=?', [req.params.id]); res.json({msg:'ok'}); });
+app.post('/admin/rental-item', async (req, res) => { await pool.execute('INSERT INTO rentals (item_name) VALUES (?)', [req.body.itemName]); res.json({msg:'ok'}); });
+app.delete('/admin/rental-item/:id', async (req, res) => { await pool.execute('DELETE FROM rentals WHERE id=?', [req.params.id]); res.json({msg:'ok'}); });
+
+// ★ [신규] 반납 기록(Logs) 조회 (최신순)
+app.get('/admin/rental-logs', async (req, res) => {
     try {
-        await pool.execute('UPDATE site_settings SET banner_image=NULL WHERE id=1');
-        res.json({ message: '배너가 삭제되었습니다.' });
-    } catch (error) { res.status(500).json({ error: '삭제 실패' }); }
+        const [rows] = await pool.execute('SELECT * FROM rental_logs ORDER BY returned_at DESC');
+        res.json(rows);
+    } catch (error) { res.status(500).json({ error: '로그 로딩 실패' }); }
 });
 
-// (기존 API들: 회원가입, 로그인, 공지, 일정, 대여, 반납 등은 위에 반드시 있어야 합니다!)
-// ...
+// [5] 조회 API
+app.get('/notices', async (req, res) => { const [r] = await pool.execute('SELECT * FROM notices ORDER BY created_at DESC'); res.json(r); });
+app.get('/schedules', async (req, res) => { const [r] = await pool.execute('SELECT * FROM schedules ORDER BY event_date ASC'); res.json(r); });
+app.get('/rentals', async (req, res) => { const [r] = await pool.execute('SELECT * FROM rentals'); res.json(r); });
 
-// [참고] 기존 대여 목록 API (그대로 둠)
-app.get('/rentals', async (req, res) => {
-    try { const [rows] = await pool.execute('SELECT * FROM rentals'); res.json(rows); } 
-    catch (error) { res.status(500).json({ error: error.message }); }
+
+// [6] 대여/반납 시스템 (수정됨)
+
+// 대여 (rented_at 추가)
+app.post('/rentals/rent', async (req, res) => {
+    const { id, renterName, renterStudentId, renterPhone } = req.body;
+    try {
+        const [check] = await pool.execute('SELECT is_rented FROM rentals WHERE id=?', [id]);
+        if (check[0].is_rented) return res.status(400).json({ error: '이미 대여중' });
+
+        // rented_at에 현재 시간(NOW()) 저장
+        await pool.execute(
+            `UPDATE rentals SET is_rented=1, renter_name=?, renter_student_id=?, renter_phone=?, rented_at=NOW(), return_image=NULL WHERE id=?`,
+            [renterName, renterStudentId, renterPhone, id]
+        );
+        res.json({ message: '대여 완료' });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
-app.post('/rentals/rent', async (req, res) => { /* 기존 코드 유지 */ });
-app.post('/rentals/return', upload.single('returnPhoto'), async (req, res) => { /* 기존 코드 유지 */ });
-// ...
+
+// 반납 (Logs로 이동 후 초기화)
+app.post('/rentals/return', upload.single('returnPhoto'), async (req, res) => {
+    const { id, confirmStudentId } = req.body;
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: '사진 필요' });
+
+    try {
+        // 1. 현재 대여 정보 가져오기
+        const [rows] = await pool.execute('SELECT * FROM rentals WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(400).json({ error: '물품 없음' });
+        
+        const item = rows[0];
+        if (item.renter_student_id !== confirmStudentId) return res.status(403).json({ error: '학번 불일치' });
+
+        const imagePath = '/uploads/' + file.filename;
+
+        // 2. ★ 기록 보관소(rental_logs)에 저장 (이사하기)
+        await pool.execute(
+            `INSERT INTO rental_logs (item_name, renter_name, renter_student_id, renter_phone, rented_at, return_image) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [item.item_name, item.renter_name, item.renter_student_id, item.renter_phone, item.rented_at, imagePath]
+        );
+
+        // 3. 원본 테이블 초기화
+        await pool.execute(
+            `UPDATE rentals SET is_rented=0, renter_name=NULL, renter_student_id=NULL, renter_phone=NULL, rented_at=NULL, return_image=NULL WHERE id=?`,
+            [id]
+        );
+
+        res.json({ message: '반납 완료' });
+    } catch (e) { 
+        console.error(e);
+        res.status(500).json({ error: e.message }); 
+    }
+});
 
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
