@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>첨성(베타)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>첨성(베타)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,38 +12,38 @@
             <h1>첨성</h1>
         </div>
         <div class="login">
-            <button id="authBtn" style="cursor: pointer;">로그인</button>
-            <span id="userDisplay" style="margin-left: 10px; font-weight: bold;"></span>
+            <button id="authBtn">로그인</button>
+            <span id="userDisplay" style="margin-left: 10px; font-weight: bold; font-size: 0.9rem;"></span>
         </div>
     </header>
 
     <main class="container">
         
         <section class="left-column">
-            <h2>📅 주요 일정</h2>
-            <div class="schedule-box" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <ul id="scheduleList" style="list-style: none; padding: 0;">
-                    <li style="color:#888; padding:10px;">일정을 불러오는 중...</li>
+            <div class="schedule-box">
+                <h2>📅 주요 일정</h2>
+                <ul id="scheduleList">
+                    <li>일정을 불러오는 중...</li>
                 </ul>
             </div>
         </section>
 
         <aside class="right-column">
-            <h2>공지사항</h2>
+            
             <section class="notice-box">
+                <h2>📢 공지사항</h2>
                 <ul id="noticeList">
-                    <li style="color:#888;">로딩 중...</li>
+                    <li>로딩 중...</li>
                 </ul>
             </section>
 
-            <h2>물품대여</h2>
             <section class="rental-box">
-                <ul>
-                    <li>공학용 계산기</li>
-                    <li>실험복</li>
-                    <li>충전기</li>
+                <h2>🎒 물품대여</h2>
+                <ul id="rentalList">
+                    <li>로딩 중...</li>
                 </ul>
             </section>
+
         </aside>
 
     </main>
@@ -61,8 +60,8 @@
                     <input type="password" id="loginPassword" placeholder="비밀번호" required>
                     <button type="submit">로그인</button>
                 </form>
-                <p style="margin-top:15px; font-size:14px;">
-                    계정이 없으신가요? <span id="showRegisterBtn" style="color:blue; cursor:pointer; font-weight:bold;">회원가입</span>
+                <p class="modal-footer-text">
+                    계정이 없으신가요? <span id="showRegisterBtn">회원가입</span>
                 </p>
             </div>
 
@@ -74,36 +73,36 @@
                     <input type="text" id="regUsername" placeholder="사용할 아이디" required>
                     <input type="password" id="regPassword" placeholder="비밀번호" required>
                     <input type="password" id="regPasswordConfirm" placeholder="비밀번호 확인" required>
-                    <button type="submit" style="background-color: #28a745;">가입하기</button>
+                    <button type="submit" style="background-color: #28a745;">가입 신청</button>
                 </form>
-                <p style="margin-top:15px; font-size:14px;">
-                    이미 계정이 있나요? <span id="showLoginBtn" style="color:blue; cursor:pointer; font-weight:bold;">로그인</span>
+                <p class="modal-footer-text">
+                    이미 계정이 있나요? <span id="showLoginBtn">로그인</span>
                 </p>
             </div>
 
             <div id="adminView" style="display: none; text-align: left;">
                 <h2 style="text-align: center;">관리자 모드</h2>
                 
-                <div style="background: #f1f1f1; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                    <h3 style="font-size:16px; margin-bottom:5px;">📢 공지사항 쓰기</h3>
+                <div class="admin-section">
+                    <h3>📢 공지사항 등록</h3>
                     <form id="noticeForm">
-                        <input type="text" id="noticeTitle" placeholder="제목" required style="margin-bottom: 5px;">
-                        <textarea id="noticeContent" placeholder="내용" rows="2" required style="width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;"></textarea>
-                        <button type="submit" style="background-color: #007BFF; margin-top: 5px; padding: 5px;">공지 등록</button>
+                        <input type="text" id="noticeTitle" placeholder="제목" required>
+                        <textarea id="noticeContent" placeholder="내용" rows="2" required></textarea>
+                        <button type="submit">등록</button>
                     </form>
                 </div>
 
-                <div style="background: #e8f0fe; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                    <h3 style="font-size:16px; margin-bottom:5px;">📅 일정 추가</h3>
+                <div class="admin-section">
+                    <h3>📅 일정 추가</h3>
                     <form id="scheduleForm">
-                        <input type="text" id="schedTitle" placeholder="일정 이름 (예: 중간고사)" required style="margin-bottom: 5px;">
-                        <input type="date" id="schedDate" required style="width:100%; box-sizing:border-box; padding:8px; margin-bottom: 5px; border:1px solid #ccc; border-radius:5px;">
-                        <button type="submit" style="background-color: #6610f2; margin-top: 5px; padding: 5px;">일정 등록</button>
+                        <input type="text" id="schedTitle" placeholder="일정명 (예: 중간고사)" required>
+                        <input type="date" id="schedDate" required>
+                        <button type="submit" style="background-color: #6610f2;">추가</button>
                     </form>
                 </div>
 
-                <h3 style="font-size:16px; margin-bottom:5px;">✅ 가입 승인 대기</h3>
-                <div id="pendingList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; background: white; border-radius:5px;">
+                <h3>✅ 가입 승인 대기</h3>
+                <div id="pendingList" class="pending-list-box">
                     </div>
                 
                 <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">닫기</button>
@@ -112,7 +111,46 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
 
+    <div id="rentModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeRentModalBtn">&times;</span>
+            <h2>물품 대여</h2>
+            <p id="rentItemName" style="color: #007BFF; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem;"></p>
+            <form id="rentForm">
+                <input type="hidden" id="rentItemId">
+                <input type="text" id="rentStudentId" placeholder="학번 (예: 20241234)" required>
+                <input type="text" id="rentName" placeholder="이름" required>
+                <input type="tel" id="rentPhone" placeholder="전화번호 (010-0000-0000)" required>
+                <button type="submit" style="background-color: #28a745;">빌리기</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="returnModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeReturnModalBtn">&times;</span>
+            <h2>물품 반납</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px; line-height: 1.4;">
+                본인 확인을 위해 학번을 입력하고<br>
+                <strong>반납 인증 사진</strong>을 꼭 올려주세요.
+            </p>
+            
+            <form id="returnForm">
+                <input type="hidden" id="returnItemId">
+                <input type="text" id="returnStudentId" placeholder="대여 시 입력한 학번" required>
+                
+                <div style="text-align: left; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                    <label style="font-size: 12px; display: block; margin-bottom: 5px;">📸 반납 사진 촬영/업로드:</label>
+                    <input type="file" id="returnPhoto" accept="image/*" required style="border: none; padding: 0; width: 100%;">
+                </div>
+
+                <button type="submit" style="background-color: #ffc107; color: #333; font-weight: bold;">반납하기</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

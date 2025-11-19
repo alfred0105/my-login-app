@@ -1,95 +1,30 @@
 /* style.css */
 
-/* =========================================
-   1. 전체 레이아웃 (PC 기준: 반반)
-   ========================================= */
+/* 1. 기본 설정 */
 body {
     margin: 0;
-    font-family: 'Noto Sans KR', sans-serif; /* 폰트 (선택사항) */
-    background-color: #f4f7f6; /* 전체 배경색 */
-}
-
-/* 메인 컨테이너: 여기가 핵심입니다! */
-.container {
-    display: flex;       /* 가로 배치 시작 */
-    flex-wrap: wrap;     /* 화면이 좁으면 줄바꿈 허용 */
-    gap: 20px;           /* 좌우 기둥 사이 간격 */
-    padding: 20px;
-    max-width: 1200px;   /* 너무 넓어지지 않게 제한 */
-    margin: 0 auto;      /* 화면 중앙 정렬 */
-}
-
-/* 왼쪽 기둥 (일정) & 오른쪽 기둥 (공지+물품) */
-.left-column, .right-column {
-    flex: 1;             /* 1:1 비율로 공간 차지 (반반) */
-    min-width: 300px;    /* 너무 찌그러지지 않게 최소 폭 설정 */
-    display: flex;       /* 내부 요소 정렬용 */
-    flex-direction: column;
-    gap: 20px;           /* 내부 박스들 간격 */
-}
-
-/* =========================================
-   2. 모바일 전용 설정 (화면 폭 768px 이하일 때)
-   ========================================= */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column; /* ★핵심: 가로 -> 세로 방향 변경 */
-    }
-
-    .left-column, .right-column {
-        width: 100%; /* 너비를 꽉 차게 변경 */
-        min-width: auto;
-    }
-}
-
-/* =========================================
-   3. 박스 디자인 (일정, 공지, 물품대여 박스 공통)
-   ========================================= */
-.schedule-box, .notice-box, .rental-box {
-    background-color: white;
-    padding: 20px;
-    border-radius: 15px;      /* 둥근 모서리 */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 은은한 그림자 */
-    border: 1px solid #eee;
-}
-
-h2 {
-    margin-top: 0;
-    font-size: 1.2rem;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background-color: #f4f7f6;
     color: #333;
-    border-bottom: 2px solid #007BFF; /* 제목 밑줄 */
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    display: inline-block;
 }
 
 ul {
-    list-style: none; /* 점 없애기 */
+    list-style: none;
     padding: 0;
     margin: 0;
 }
 
-li {
-    padding: 8px 0;
-    border-bottom: 1px solid #f1f1f1;
-    font-size: 0.95rem;
-}
-li:last-child { border-bottom: none; }
-
-
-/* =========================================
-   4. 헤더 디자인 (로고 + 로그인 버튼)
-   ========================================= */
+/* 2. 헤더 (PC/모바일 공통) */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
     background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    position: sticky; /* 스크롤 내려도 상단 고정 (선택사항) */
+    border-bottom: 1px solid #ddd;
+    position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 100; /* 항상 위에 떠있기 */
 }
 
 .logo h1 {
@@ -98,33 +33,83 @@ li:last-child { border-bottom: none; }
     font-size: 1.5rem;
 }
 
-/* 로그인 버튼 등 */
-.login button, .login span {
-    font-size: 0.9rem;
-}
 .login button {
     background-color: #007BFF;
     color: white;
     border: none;
-    padding: 8px 15px;
+    padding: 8px 16px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
+    transition: 0.2s;
 }
-.login button:hover { background-color: #0056b3; }
+.login button:hover {
+    background-color: #0056b3;
+}
 
+/* 3. 레이아웃 (반응형 핵심) */
+.container {
+    display: flex;
+    flex-wrap: wrap; /* 공간 부족하면 줄바꿈 */
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto; /* 중앙 정렬 */
+}
 
-/* =========================================
-   5. 모달(팝업) 디자인 (기존 코드 유지)
-   ========================================= */
+.left-column, .right-column {
+    flex: 1; /* 1:1 비율로 공간 차지 */
+    min-width: 300px; /* 너무 좁아지지 않게 방지 */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ★ 모바일 전용 스타일 (화면 폭이 768px 이하일 때) */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* 가로 -> 세로 배치 변경 */
+        padding: 10px;
+    }
+    .left-column, .right-column {
+        width: 100%; /* 꽉 차게 */
+        min-width: auto;
+    }
+}
+
+/* 4. 박스 디자인 (카드 형태) */
+.schedule-box, .notice-box, .rental-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #007BFF;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 0.95rem;
+}
+li:last-child { border-bottom: none; }
+
+/* 5. 모달 (팝업창) 디자인 */
 .modal-overlay {
-    display: none; 
+    display: none; /* 평소엔 숨김 */
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정 */
+    backdrop-filter: blur(4px); /* 블러 효과 */
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -134,24 +119,82 @@ li:last-child { border-bottom: none; }
     background-color: white;
     padding: 30px;
     border-radius: 15px;
-    width: 90%;       /* 모바일에서 안 잘리게 90% */
-    max-width: 350px; /* PC에서는 최대 350px */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     text-align: center;
     position: relative;
+    max-height: 90vh; /* 화면보다 길면 스크롤 */
+    overflow-y: auto;
 }
 
 .close-btn {
     position: absolute;
     top: 10px; right: 15px;
-    font-size: 24px; cursor: pointer; color: #aaa;
+    font-size: 28px;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
 }
-.modal-content input {
-    width: 100%; padding: 12px; margin: 8px 0;
-    box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;
+.close-btn:hover { color: #333; }
+
+/* 모달 내부 입력창 & 버튼 */
+.modal-content input, .modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
 }
+
 .modal-content button {
-    width: 100%; padding: 12px; margin-top: 10px;
-    background-color: #007BFF; color: white;
-    border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+.modal-content button:hover { opacity: 0.9; }
+
+.modal-footer-text {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #666;
+}
+.modal-footer-text span {
+    color: #007BFF;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* 관리자 페이지 내부 스타일 */
+.admin-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+.admin-section h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.pending-list-box {
+    max-height: 150px; 
+    overflow-y: auto; 
+    border: 1px solid #eee; 
+    padding: 5px;
+    background: white;
+    border-radius: 5px;
 }
