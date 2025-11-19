@@ -1,5 +1,6 @@
 // script.js
-
+const scheduleList = document.getElementById('scheduleList');
+const scheduleForm = document.getElementById('scheduleForm');
 const modal = document.getElementById('loginModal');
 const authBtn = document.getElementById('authBtn');
 const closeBtn = document.getElementById('closeModalBtn');
@@ -229,68 +230,167 @@ registerForm.addEventListener('submit', async (e) => {
 });
 // --- [6] 공지사항 기능 ---
 
-// 1. 공지사항 불러오기 (페이지 로드 시 자동 실행)
+// --- [6] 공지사항 기능 (삭제 버튼 추가됨) ---
 async function loadNotices() {
     try {
         const res = await fetch('/notices');
         const notices = await res.json();
-
-        // 목록 초기화
         noticeList.innerHTML = '';
 
         if (notices.length === 0) {
             noticeList.innerHTML = '<li>등록된 공지사항이 없습니다.</li>';
-            return;
         }
 
-        // 최신 5개만 보여주기 (원하면 slice 제거)
-        notices.slice(0, 5).forEach(notice => {
+        // 현재 로그인한 사람이 관리자(admin)인지 확인
+        const currentId = localStorage.getItem('userId'); 
+        const isAdmin = (currentId === 'admin');
+
+        notices.forEach(notice => {
             const li = document.createElement('li');
-            // 제목 클릭 시 내용 보이게 (간단 구현)
-            li.innerHTML = `
-                <strong style="cursor:pointer;" onclick="alert('${notice.content.replace(/\n/g, '\\n')}')">
+            li.style.borderBottom = "1px solid #eee";
+            li.style.padding = "8px 0";
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+            li.style.alignItems = "center";
+
+            // 내용 HTML
+            let html = `
+                <span style="cursor:pointer;" onclick="alert('${notice.content.replace(/\n/g, '\\n')}')">
                     ${notice.title}
-                </strong>
-                <span style="font-size:11px; color:#888; float:right;">${new Date(notice.created_at).toLocaleDateString()}</span>
+                </span>
             `;
+
+            // ★ 관리자라면 삭제 버튼(X) 추가
+            if (isAdmin) {
+                html += `
+                    <button onclick="deleteNotice(${notice.id})" 
+                            style="background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; line-height:18px; margin-left:5px;">
+                        X
+                    </button>`;
+            }
+
+            li.innerHTML = html;
             noticeList.appendChild(li);
         });
-
     } catch (err) {
-        console.error(err);
         noticeList.innerHTML = '<li>불러오기 실패</li>';
     }
 }
 
-// 페이지 시작하자마자 공지사항 불러오기!
-loadNotices();
-
-
-// 2. 공지사항 등록하기 (관리자)
-noticeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const title = document.getElementById('noticeTitle').value;
-    const content = document.getElementById('noticeContent').value;
-
+// 공지사항 삭제 함수
+window.deleteNotice = async (id) => {
+    if(!confirm('정말 삭제하시겠습니까?')) return;
     try {
-        const res = await fetch('/admin/notice', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content })
+        await fetch(`/admin/notice/${id}`, { method: 'DELETE' });
+        loadNotices(); // 목록 새로고침
+    } catch(err) { alert('삭제 실패'); }
+};
+
+
+// --- [7] 일정(D-Day) 기능 (새로 추가됨) ---
+
+// 1. 일정 불러오기 & D-Day 계산
+async function loadSchedules() {
+    try {
+        const res = await fetch('/schedules');
+        const schedules = await res.json();
+        scheduleList.innerHTML = '';
+
+        if (schedules.length === 0) {
+            scheduleList.innerHTML = '<li>예정된 일정이 없습니다.</li>';
+            return;
+        }
+
+        // 관리자 여부 확인
+        const currentId = localStorage.getItem('userId');
+        const isAdmin = (currentId === 'admin');
+        
+        const today = new Date();
+        today.setHours(0,0,0,0); // 시간은 무시하고 날짜만 비교
+
+        schedules.forEach(sched => {
+            const eventDate = new Date(sched.event_date);
+            const diffTime = eventDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 일수 차이 계산
+
+            // D-Day 글자 만들기
+            let dDayText = "";
+            let color = "black";
+
+            if (diffDays === 0) {
+                dDayText = "D-Day";
+                color = "red";
+            } else if (diffDays > 0) {
+                dDayText = `D-${diffDays}`;
+                color = "blue";
+            } else {
+                dDayText = `D+${Math.abs(diffDays)}`; // 지난 일정
+                color = "#888";
+            }
+
+            const li = document.createElement('li');
+            li.style.padding = "10px 0";
+            li.style.borderBottom = "1px solid #eee";
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+
+            let html = `
+                <div>
+                    <strong style="color:${color}; margin-right:10px;">${dDayText}</strong>
+                    <span>${sched.title}</span>
+                    <br>
+                    <span style="font-size:12px; color:#aaa;">${sched.event_date.split('T')[0]}</span>
+                </div>
+            `;
+
+            // 관리자면 삭제 버튼 추가
+            if (isAdmin) {
+                html += `
+                    <button onclick="deleteSchedule(${sched.id})" 
+                            style="background:#dc3545; color:white; border:none; border-radius:3px; padding:2px 5px; font-size:11px; cursor:pointer; height:25px;">
+                        삭제
+                    </button>`;
+            }
+
+            li.innerHTML = html;
+            scheduleList.appendChild(li);
         });
 
-        if (res.ok) {
-            alert('공지사항이 등록되었습니다.');
-            // 입력창 비우기
-            document.getElementById('noticeTitle').value = '';
-            document.getElementById('noticeContent').value = '';
-            // 목록 새로고침
-            loadNotices();
-        } else {
-            alert('등록 실패');
-        }
     } catch (err) {
-        alert('서버 오류');
+        console.error(err);
     }
+}
+
+// 일정 삭제 함수
+window.deleteSchedule = async (id) => {
+    if(!confirm('이 일정을 삭제하시겠습니까?')) return;
+    try {
+        await fetch(`/admin/schedule/${id}`, { method: 'DELETE' });
+        loadSchedules();
+    } catch(err) { alert('삭제 실패'); }
+};
+
+// 2. 일정 등록하기
+scheduleForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('schedTitle').value;
+    const eventDate = document.getElementById('schedDate').value;
+
+    try {
+        const res = await fetch('/admin/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, eventDate })
+        });
+        if (res.ok) {
+            alert('일정이 등록되었습니다.');
+            document.getElementById('schedTitle').value = '';
+            document.getElementById('schedDate').value = '';
+            loadSchedules();
+        }
+    } catch (err) { alert('오류 발생'); }
 });
+
+// 페이지 시작 시 실행
+loadNotices();
+loadSchedules(); // ★ 추가

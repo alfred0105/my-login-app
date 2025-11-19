@@ -121,4 +121,50 @@ app.post('/admin/notice', async (req, res) => {
     }
 });
 
+// ... 기존 코드들 ...
+
+// [추가 1] 공지사항 삭제 (관리자용)
+app.delete('/admin/notice/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.execute('DELETE FROM notices WHERE id = ?', [id]);
+        res.json({ message: '삭제되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '삭제 실패' });
+    }
+});
+
+// [추가 2] 일정 목록 가져오기 (날짜순 정렬)
+app.get('/schedules', async (req, res) => {
+    try {
+        // 날짜가 가까운 순서대로 정렬 (ASC)
+        const [rows] = await pool.execute('SELECT * FROM schedules ORDER BY event_date ASC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: '일정 로딩 실패' });
+    }
+});
+
+// [추가 3] 일정 등록하기 (관리자용)
+app.post('/admin/schedule', async (req, res) => {
+    const { title, eventDate } = req.body;
+    try {
+        await pool.execute('INSERT INTO schedules (title, event_date) VALUES (?, ?)', [title, eventDate]);
+        res.json({ message: '일정이 등록되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '등록 실패' });
+    }
+});
+
+// [추가 4] 일정 삭제 (관리자용)
+app.delete('/admin/schedule/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.execute('DELETE FROM schedules WHERE id = ?', [id]);
+        res.json({ message: '삭제되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '삭제 실패' });
+    }
+});
+
 // ... app.listen ...
