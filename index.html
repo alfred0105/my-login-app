@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>첨성(베타)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>첨성(베타)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,7 +19,6 @@
     </header>
 
     <main class="container">
-        
         <section class="left-column">
             <div class="schedule-box">
                 <h2>📅 주요 일정</h2>
@@ -29,7 +29,6 @@
         </section>
 
         <aside class="right-column">
-            
             <section class="notice-box">
                 <h2>📢 공지사항</h2>
                 <ul id="noticeList">
@@ -43,11 +42,8 @@
                     <li>로딩 중...</li>
                 </ul>
             </section>
-
         </aside>
-
     </main>
-
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
@@ -101,16 +97,22 @@
                     </form>
                 </div>
 
+                <div class="admin-section">
+                    <h3>🎒 물품 추가</h3>
+                    <form id="addRentalForm">
+                        <input type="text" id="newItemName" placeholder="물품명 (예: 우산, 멀티탭)" required>
+                        <button type="submit" style="background-color: #17a2b8;">물품 추가</button>
+                    </form>
+                </div>
+
                 <h3>✅ 가입 승인 대기</h3>
-                <div id="pendingList" class="pending-list-box">
-                    </div>
+                <div id="pendingList" class="pending-list-box"></div>
                 
                 <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">닫기</button>
             </div>
 
         </div>
     </div>
-
 
     <div id="rentModal" class="modal-overlay">
         <div class="modal-content">
@@ -127,25 +129,20 @@
         </div>
     </div>
 
-
     <div id="returnModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" id="closeReturnModalBtn">&times;</span>
             <h2>물품 반납</h2>
             <p style="font-size: 13px; color: #666; margin-bottom: 15px; line-height: 1.4;">
-                본인 확인을 위해 학번을 입력하고<br>
-                <strong>반납 인증 사진</strong>을 꼭 올려주세요.
+                본인 확인을 위해 학번을 입력하고<br><strong>반납 인증 사진</strong>을 꼭 올려주세요.
             </p>
-            
             <form id="returnForm">
                 <input type="hidden" id="returnItemId">
                 <input type="text" id="returnStudentId" placeholder="대여 시 입력한 학번" required>
-                
                 <div style="text-align: left; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 5px;">
                     <label style="font-size: 12px; display: block; margin-bottom: 5px;">📸 반납 사진 촬영/업로드:</label>
                     <input type="file" id="returnPhoto" accept="image/*" required style="border: none; padding: 0; width: 100%;">
                 </div>
-
                 <button type="submit" style="background-color: #ffc107; color: #333; font-weight: bold;">반납하기</button>
             </form>
         </div>
