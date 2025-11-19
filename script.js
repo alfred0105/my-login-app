@@ -8,24 +8,19 @@ const userDisplay = document.getElementById('userDisplay');
 
 const loginView = document.getElementById('loginView');
 const registerView = document.getElementById('registerView');
-const adminView = document.getElementById('adminView');
 
 const showRegisterBtn = document.getElementById('showRegisterBtn');
 const showLoginBtn = document.getElementById('showLoginBtn');
-const backToMainBtn = document.getElementById('backToMainBtn');
 
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 
-const noticeForm = document.getElementById('noticeForm');
 const noticeList = document.getElementById('noticeList');
-const scheduleForm = document.getElementById('scheduleForm');
 const scheduleList = document.getElementById('scheduleList');
-const addRentalForm = document.getElementById('addRentalForm'); // [★추가됨] 물품 추가 폼
+const rentalList = document.getElementById('rentalList');
 
 const rentModal = document.getElementById('rentModal');
 const returnModal = document.getElementById('returnModal');
-const rentalList = document.getElementById('rentalList');
 
 const closeRentModalBtn = document.getElementById('closeRentModalBtn');
 const closeReturnModalBtn = document.getElementById('closeReturnModalBtn');
@@ -33,22 +28,13 @@ const closeReturnModalBtn = document.getElementById('closeReturnModalBtn');
 const rentForm = document.getElementById('rentForm');
 const returnForm = document.getElementById('returnForm');
 
-const settingsForm = document.getElementById('settingsForm');
-const bannerFile = document.getElementById('bannerFile');
-const textLogo = document.getElementById('textLogo');
-const bannerLogo = document.getElementById('bannerLogo');
-
-// 푸터 요소들
+// 설정 관련 요소 (푸터/배너 표시용)
 const footerBizName = document.getElementById('footerBizName');
 const footerAddress = document.getElementById('footerAddress');
 const footerContact = document.getElementById('footerContact');
 const footerSitemap = document.getElementById('footerSitemap');
-
-// 관리자 입력창들
-const editBizName = document.getElementById('editBizName');
-const editAddress = document.getElementById('editAddress');
-const editContact = document.getElementById('editContact');
-const editSitemap = document.getElementById('editSitemap');
+const textLogo = document.getElementById('textLogo');
+const bannerLogo = document.getElementById('bannerLogo');
 
 let adminBtn = null;
 
@@ -68,6 +54,7 @@ function updateLoginState(isLoggedIn, infoText = "", userId = "") {
         authBtn.innerText = "로그아웃";
         userDisplay.innerText = infoText + "님";
         
+        // 관리자 버튼 생성
         if (userId === 'admin') {
             if (!adminBtn) {
                 adminBtn = document.createElement('button');
@@ -79,7 +66,8 @@ function updateLoginState(isLoggedIn, infoText = "", userId = "") {
                 adminBtn.style.border = "none";
                 adminBtn.style.padding = "5px 10px";
                 adminBtn.style.borderRadius = "5px";
-                adminBtn.onclick = openAdminPanel;
+                // ★ 수정됨: 클릭 시 페이지 이동
+                adminBtn.onclick = () => { window.location.href = '/admin.html'; };
                 document.querySelector('.login').appendChild(adminBtn);
             }
         }
@@ -98,7 +86,6 @@ authBtn.addEventListener('click', () => {
     if (authBtn.innerText === "로그인") {
         loginView.style.display = 'block';
         registerView.style.display = 'none';
-        adminView.style.display = 'none';
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
         modal.style.display = 'flex';
@@ -113,7 +100,6 @@ authBtn.addEventListener('click', () => {
 });
 
 closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
-backToMainBtn.addEventListener('click', () => { modal.style.display = 'none'; });
 closeRentModalBtn.addEventListener('click', () => { rentModal.style.display = 'none'; });
 closeReturnModalBtn.addEventListener('click', () => { returnModal.style.display = 'none'; });
 
@@ -131,26 +117,25 @@ showLoginBtn.addEventListener('click', () => {
     registerView.style.display = 'none';
     loginView.style.display = 'block';
 });
+
+
+// =========================================
+// [4] 데이터 불러오기 (공지, 일정, 대여목록, 설정)
+// =========================================
+
+// 4-1. 설정 불러오기 (배너/푸터)
 async function loadSettings() {
     try {
         const res = await fetch('/settings');
         const data = await res.json();
         
-        // A. 푸터 정보 적용
+        // 푸터 적용
         footerBizName.innerText = data.business_name || '첨성';
         footerAddress.innerText = data.address || '';
         footerContact.innerText = data.contact || '';
         footerSitemap.innerText = data.sitemap_text || '';
 
-        // 관리자 폼에도 미리 채워넣기
-        if(document.getElementById('adminView').style.display === 'block') {
-            editBizName.value = data.business_name;
-            editAddress.value = data.address;
-            editContact.value = data.contact;
-            editSitemap.value = data.sitemap_text;
-        }
-
-        // B. 배너 로직 적용 (이미지 있으면 이미지, 없으면 글자)
+        // 배너 적용
         if (data.banner_image) {
             textLogo.style.display = 'none';
             bannerLogo.src = data.banner_image;
@@ -159,100 +144,16 @@ async function loadSettings() {
             textLogo.style.display = 'block';
             bannerLogo.style.display = 'none';
         }
-
-    } catch (err) { console.error('설정 로드 실패', err); }
+    } catch (err) { console.error('설정 로드 실패'); }
 }
 
-
-// =========================================
-// [4] 관리자 기능
-// =========================================
-async function openAdminPanel() {
-    modal.style.display = 'flex';
-    loginView.style.display = 'none';
-    registerView.style.display = 'none';
-    adminView.style.display = 'block';
-
-    const listDiv = document.getElementById('pendingList');
-    listDiv.innerHTML = '<p style="text-align:center; color:#666;">로딩 중...</p>';
-
-    try {
-        const res = await fetch('/admin/pending-users');
-        const users = await res.json();
-        if (users.length === 0) {
-            listDiv.innerHTML = '<p style="text-align:center; color:#666;">승인 대기 중인 회원이 없습니다.</p>';
-            return;
-        }
-        let html = '<ul style="list-style:none; padding:0;">';
-        users.forEach(user => {
-            html += `
-                <li style="border-bottom:1px solid #eee; padding:10px; display:flex; justify-content:space-between; align-items:center; background:white;">
-                    <div><strong>${user.name}</strong> (${user.student_id})<br><span style="font-size:12px; color:#888;">ID: ${user.username}</span></div>
-                    <button onclick="approveUser('${user.username}')" style="background-color:#28a745; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">승인</button>
-                </li>`;
-        });
-        html += '</ul>';
-        listDiv.innerHTML = html;
-    } catch (err) { listDiv.innerHTML = '<p>목록 불러오기 실패</p>'; }
-}
-
-window.approveUser = async (username) => {
-    if (!confirm(`${username} 님을 승인하시겠습니까?`)) return;
-    try {
-        const res = await fetch('/admin/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
-        });
-        if (res.ok) { alert('승인되었습니다.'); openAdminPanel(); }
-    } catch (err) { alert('오류'); }
-};
-
-// [★추가됨] 물품 추가 기능
-addRentalForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const itemName = document.getElementById('newItemName').value;
-    try {
-        const res = await fetch('/admin/rental-item', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemName })
-        });
-        if (res.ok) {
-            alert('물품이 추가되었습니다.');
-            document.getElementById('newItemName').value = '';
-            loadRentals(); // 목록 새로고침
-        }
-    } catch (err) { alert('오류'); }
-});
-
-// [★추가됨] 물품 삭제 기능
-window.deleteRentalItem = async (id) => {
-    if(!confirm('정말 이 물품을 삭제하시겠습니까?')) return;
-    try {
-        const res = await fetch(`/admin/rental-item/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            alert('삭제되었습니다.');
-            loadRentals();
-        }
-    } catch (err) { alert('오류'); }
-};
-
-
-// =========================================
-// [5] 데이터 불러오기
-// =========================================
-
-// 5-1. 공지사항
+// 4-2. 공지사항 (삭제 버튼 제거됨)
 async function loadNotices() {
     try {
         const res = await fetch('/notices');
         const notices = await res.json();
         noticeList.innerHTML = '';
         if (notices.length === 0) noticeList.innerHTML = '<li style="padding:10px; text-align:center; color:#888;">등록된 공지사항이 없습니다.</li>';
-
-        const currentId = localStorage.getItem('userId'); 
-        const isAdmin = (currentId === 'admin');
 
         notices.forEach(notice => {
             const li = document.createElement('li');
@@ -261,22 +162,20 @@ async function loadNotices() {
             li.style.alignItems = "center";
             li.style.padding = "10px 5px";
             li.style.borderBottom = "1px solid #eee";
-
-            let html = `<span style="cursor:pointer; flex-grow:1;" onclick="alert('${notice.content.replace(/\n/g, '\\n')}')">${notice.title}</span>
-                        <span style="font-size:11px; color:#aaa; margin-left:10px;">${new Date(notice.created_at).toLocaleDateString()}</span>`;
-            if (isAdmin) html += `<button onclick="deleteNotice(${notice.id})" style="background:#ff4d4d; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; margin-left:8px;">X</button>`;
-            li.innerHTML = html;
+            
+            // 관리자라도 여기서 삭제 안 함 (admin.html에서 함)
+            li.innerHTML = `
+                <span style="cursor:pointer; flex-grow:1;" onclick="alert('${notice.content.replace(/\n/g, '\\n')}')">
+                    ${notice.title}
+                </span>
+                <span style="font-size:11px; color:#aaa; margin-left:10px;">${new Date(notice.created_at).toLocaleDateString()}</span>
+            `;
             noticeList.appendChild(li);
         });
     } catch (err) { noticeList.innerHTML = '<li>불러오기 실패</li>'; }
 }
 
-window.deleteNotice = async (id) => {
-    if(!confirm('삭제하시겠습니까?')) return;
-    try { await fetch(`/admin/notice/${id}`, { method: 'DELETE' }); loadNotices(); } catch(err) { alert('실패'); }
-};
-
-// 5-2. 일정
+// 4-3. 일정 (삭제 버튼 제거됨)
 async function loadSchedules() {
     try {
         const res = await fetch('/schedules');
@@ -284,8 +183,6 @@ async function loadSchedules() {
         scheduleList.innerHTML = '';
         if (schedules.length === 0) { scheduleList.innerHTML = '<li style="padding:10px; text-align:center; color:#888;">예정된 일정이 없습니다.</li>'; return; }
 
-        const currentId = localStorage.getItem('userId');
-        const isAdmin = (currentId === 'admin');
         const today = new Date(); today.setHours(0,0,0,0);
 
         schedules.forEach(sched => {
@@ -301,64 +198,45 @@ async function loadSchedules() {
             li.style.alignItems = "center";
             li.style.padding = "12px 5px";
             li.style.borderBottom = "1px solid #eee";
-            let html = `<div style="display:flex; align-items:center; gap:10px;"><strong style="color:${color}; min-width:45px;">${dDayText}</strong><div><span>${sched.title}</span><br><span style="font-size:11px; color:#aaa;">${sched.event_date.split('T')[0]}</span></div></div>`;
-            if (isAdmin) html += `<button onclick="deleteSchedule(${sched.id})" style="background:#dc3545; color:white; border:none; border-radius:3px; padding:4px 8px; font-size:11px; cursor:pointer;">삭제</button>`;
-            li.innerHTML = html;
+            
+            li.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <strong style="color:${color}; min-width:45px;">${dDayText}</strong>
+                    <div>
+                        <span>${sched.title}</span><br>
+                        <span style="font-size:11px; color:#aaa;">${sched.event_date.split('T')[0]}</span>
+                    </div>
+                </div>`;
             scheduleList.appendChild(li);
         });
     } catch (err) { console.error(err); }
 }
 
-window.deleteSchedule = async (id) => {
-    if(!confirm('삭제하시겠습니까?')) return;
-    try { await fetch(`/admin/schedule/${id}`, { method: 'DELETE' }); loadSchedules(); } catch(err) { alert('실패'); }
-};
-
-// 3. [수정] 물품 대여 목록 (관리자 상세 정보 보기 추가)
+// 4-4. 물품 대여 목록 (삭제 버튼 제거, 반납 버튼만 유지)
 async function loadRentals() {
     try {
         const res = await fetch('/rentals');
         const items = await res.json();
         rentalList.innerHTML = '';
 
-        const currentId = localStorage.getItem('userId'); 
-        const isAdmin = (currentId === 'admin');
-
         items.forEach(item => {
             const li = document.createElement('li');
-            // 스타일 조정 (관리자일 경우 내용이 많아져서 세로 정렬 허용)
             li.style.display = "flex";
             li.style.justifyContent = "space-between";
             li.style.alignItems = "center";
-            li.style.flexWrap = "wrap"; // 줄바꿈 허용
             li.style.padding = "12px 0";
             li.style.borderBottom = "1px solid #eee";
 
-            let leftContent = `<div><span style="font-size:1rem; font-weight:bold;">${item.item_name}</span>`;
-            
-            // ★ 관리자라면 빌린 사람 정보 상세 표시
-            if (isAdmin && item.is_rented === 1) {
-                leftContent += `
-                    <span class="renter-info">
-                        👤 ${item.renter_name} (${item.renter_student_id})<br>
-                        📞 ${item.renter_phone || '번호없음'}
-                    </span>`;
-            }
-            leftContent += `</div>`;
-
+            let leftContent = `<span>${item.item_name}</span>`;
             let rightContent = '';
 
             if (item.is_rented === 1) {
-                rightContent = `<button onclick="openReturnModal(${item.id})" style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">대여중 (반납)</button>`;
+                rightContent = `<button onclick="openReturnModal(${item.id})" style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">대여중 (반납하기)</button>`;
             } else {
                 rightContent = `<button onclick="openRentModal(${item.id}, '${item.item_name}')" style="background:#007BFF; color:white; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer;">대여하기</button>`;
             }
 
-            if (isAdmin) {
-                rightContent += `<button onclick="deleteRentalItem(${item.id})" style="background:#dc3545; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; margin-left:8px;">X</button>`;
-            }
-
-            li.innerHTML = leftContent + `<div style="display:flex; align-items:center;">${rightContent}</div>`;
+            li.innerHTML = leftContent + `<div>${rightContent}</div>`;
             rentalList.appendChild(li);
         });
     } catch (err) { rentalList.innerHTML = '<li>목록 로딩 실패</li>'; }
@@ -366,7 +244,7 @@ async function loadRentals() {
 
 
 // =========================================
-// [6] 대여 및 반납, 기타 폼 처리
+// [5] 대여 및 반납, 로그인 처리
 // =========================================
 window.openRentModal = (id, name) => {
     document.getElementById('rentItemId').value = id;
@@ -396,7 +274,7 @@ rentForm.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, renterStudentId, renterName, renterPhone })
         });
-        if (res.ok) { alert('대여 완료!'); rentModal.style.display = 'none'; loadRentals(); } 
+        if (res.ok) { alert('대여 완료! 반납 시 학번이 필요하니 기억해주세요.'); rentModal.style.display = 'none'; loadRentals(); } 
         else { const data = await res.json(); alert(data.error); }
     } catch (err) { alert('오류'); }
 });
@@ -456,77 +334,8 @@ registerForm.addEventListener('submit', async (e) => {
     } catch (err) { alert("오류"); }
 });
 
-noticeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('noticeTitle').value;
-    const content = document.getElementById('noticeContent').value;
-    try {
-        const res = await fetch('/admin/notice', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content })
-        });
-        if (res.ok) { alert('등록 완료'); document.getElementById('noticeTitle').value = ''; document.getElementById('noticeContent').value = ''; loadNotices(); }
-    } catch (err) { alert('오류'); }
-});
-
-scheduleForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('schedTitle').value;
-    const eventDate = document.getElementById('schedDate').value;
-    try {
-        const res = await fetch('/admin/schedule', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, eventDate })
-        });
-        if (res.ok) { alert('등록 완료'); document.getElementById('schedTitle').value = ''; document.getElementById('schedDate').value = ''; loadSchedules(); }
-    } catch (err) { alert('오류'); }
-});
-
-// 텍스트 정보 저장
-settingsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        const res = await fetch('/admin/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                businessName: editBizName.value,
-                address: editAddress.value,
-                contact: editContact.value,
-                sitemapText: editSitemap.value
-            })
-        });
-        if (res.ok) { alert('저장되었습니다.'); loadSettings(); }
-    } catch (err) { alert('오류'); }
-});
-
-// 배너 업로드
-window.uploadBanner = async () => {
-    const file = bannerFile.files[0];
-    if (!file) return alert('파일을 선택해주세요.');
-    
-    const formData = new FormData();
-    formData.append('bannerFile', file);
-
-    try {
-        const res = await fetch('/admin/banner', { method: 'POST', body: formData });
-        if (res.ok) { alert('배너가 적용되었습니다.'); loadSettings(); }
-    } catch (err) { alert('오류'); }
-};
-
-// 배너 삭제
-window.deleteBanner = async () => {
-    if(!confirm('배너를 삭제하고 글자로 되돌리겠습니까?')) return;
-    try {
-        await fetch('/admin/banner', { method: 'DELETE' });
-        loadSettings();
-    } catch (err) { alert('오류'); }
-};
-
-// [8] 초기 로드
+// [6] 초기 로드
+loadSettings();
 loadNotices();
 loadSchedules();
 loadRentals();
-loadSettings();

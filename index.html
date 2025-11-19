@@ -98,62 +98,6 @@
                 </p>
             </div>
 
-            <div id="adminView" style="display: none; text-align: left;">
-                <h2 style="text-align: center;">관리자 모드</h2>
-                
-                <div class="admin-section" style="border: 2px solid #007BFF; background: #eef6ff;">
-                    <h3>⚙️ 사이트 설정</h3>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">배너 이미지 변경:</label>
-                        <div style="display:flex; gap:5px;">
-                            <input type="file" id="bannerFile" accept="image/*" style="font-size:12px;">
-                            <button onclick="uploadBanner()" style="width:auto; font-size:12px; padding:5px 10px;">적용</button>
-                            <button onclick="deleteBanner()" style="width:auto; font-size:12px; background:#dc3545; padding:5px 10px;">삭제</button>
-                        </div>
-                    </div>
-
-                    <form id="settingsForm">
-                        <input type="text" id="editBizName" placeholder="상호명 (예: 첨성 프로젝트)" required>
-                        <input type="text" id="editAddress" placeholder="주소" required>
-                        <input type="text" id="editContact" placeholder="연락처" required>
-                        <textarea id="editSitemap" placeholder="사이트맵 내용 (예: 홈 | 공지사항...)" rows="2"></textarea>
-                        <button type="submit" style="background-color:#17a2b8;">정보 수정 저장</button>
-                    </form>
-                </div>
-
-                <div class="admin-section">
-                    <h3>📢 공지사항 등록</h3>
-                    <form id="noticeForm">
-                        <input type="text" id="noticeTitle" placeholder="제목" required>
-                        <textarea id="noticeContent" placeholder="내용" rows="2" required></textarea>
-                        <button type="submit">등록</button>
-                    </form>
-                </div>
-
-                <div class="admin-section">
-                    <h3>📅 일정 추가</h3>
-                    <form id="scheduleForm">
-                        <input type="text" id="schedTitle" placeholder="일정명 (예: 중간고사)" required>
-                        <input type="date" id="schedDate" required>
-                        <button type="submit" style="background-color: #6610f2;">추가</button>
-                    </form>
-                </div>
-
-                <div class="admin-section">
-                    <h3>🎒 물품 추가</h3>
-                    <form id="addRentalForm">
-                        <input type="text" id="newItemName" placeholder="물품명 (예: 우산, 멀티탭)" required>
-                        <button type="submit" style="background-color: #17a2b8;">물품 추가</button>
-                    </form>
-                </div>
-
-                <h3>✅ 가입 승인 대기</h3>
-                <div id="pendingList" class="pending-list-box">
-                    </div>
-                
-                <button id="backToMainBtn" style="background-color: #6c757d; margin-top: 20px;">닫기</button>
-            </div>
 
         </div>
     </div>
