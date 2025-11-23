@@ -1,44 +1,22 @@
 // =========================================
-// [1] 요소 선택 (DOM Elements)
+// [1] DOM 요소 선택
 // =========================================
-
-// 모달 관련
 const modal = document.getElementById('loginModal');
-const loginView = document.getElementById('loginView');
-const registerView = document.getElementById('registerView');
-const closeBtn = document.getElementById('closeModalBtn');
-
-// 버튼
 const authBtn = document.getElementById('authBtn');
 const userDisplay = document.getElementById('userDisplay');
-const showRegisterBtn = document.getElementById('showRegisterBtn');
-const showLoginBtn = document.getElementById('showLoginBtn');
 
-// 폼
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
+const loginView = document.getElementById('loginView');
+const registerView = document.getElementById('registerView');
 
-// 컨텐츠 리스트
 const noticeList = document.getElementById('noticeList');
 const scheduleList = document.getElementById('scheduleList');
 const rentalList = document.getElementById('rentalList');
 
-// 대여 & 반납 모달
 const rentModal = document.getElementById('rentModal');
 const returnModal = document.getElementById('returnModal');
-const closeRentModalBtn = document.getElementById('closeRentModalBtn');
-const closeReturnModalBtn = document.getElementById('closeReturnModalBtn');
-const rentForm = document.getElementById('rentForm');
-const returnForm = document.getElementById('returnForm');
-
-// 공지사항 상세 팝업
 const noticeDetailModal = document.getElementById('noticeDetailModal');
-const closeNoticeModalBtn = document.getElementById('closeNoticeModalBtn'); // HTML에 이 버튼 ID 확인 필요
-const detailTitle = document.getElementById('detailTitle');
-const detailDate = document.getElementById('detailDate');
-const detailContent = document.getElementById('detailContent');
 
-// 설정(배너/푸터) 표시용
+// 설정 요소
 const textLogo = document.getElementById('textLogo');
 const bannerLogo = document.getElementById('bannerLogo');
 const footerBizName = document.getElementById('footerBizName');
@@ -46,39 +24,34 @@ const footerAddress = document.getElementById('footerAddress');
 const footerContact = document.getElementById('footerContact');
 const footerSitemap = document.getElementById('footerSitemap');
 
-// 관리자 버튼 변수
 let adminBtn = null;
 
-
 // =========================================
-// [2] 초기 상태 및 로그인 관리
+// [2] 초기화 및 로그인 관리
 // =========================================
 const storedInfo = localStorage.getItem('userInfo');
 const storedId = localStorage.getItem('userId');
 
-if (storedInfo) {
-    updateLoginState(true, storedInfo, storedId);
-}
+if (storedInfo) updateLoginState(true, storedInfo, storedId);
 
 function updateLoginState(isLoggedIn, infoText = "", userId = "") {
     if (isLoggedIn) {
         authBtn.innerText = "로그아웃";
         userDisplay.innerText = infoText + "님";
         
-        // 관리자(admin)라면 '관리자 페이지 이동' 버튼 생성
         if (userId === 'admin') {
             if (!adminBtn) {
                 adminBtn = document.createElement('button');
                 adminBtn.innerText = "⚙️관리자";
-                adminBtn.style.marginLeft = "10px";
+                adminBtn.className = "admin-btn-style"; // CSS 클래스 사용 권장 (style.css참조)
+                adminBtn.style.marginLeft = "10px"; 
                 adminBtn.style.cursor = "pointer";
-                adminBtn.style.backgroundColor = "#6c757d";
+                adminBtn.style.background = "#6c757d";
                 adminBtn.style.color = "white";
                 adminBtn.style.border = "none";
                 adminBtn.style.padding = "5px 10px";
                 adminBtn.style.borderRadius = "5px";
-                
-                // 클릭 시 admin.html로 이동
+
                 adminBtn.onclick = () => { window.location.href = '/admin.html'; };
                 document.querySelector('.login').appendChild(adminBtn);
             }
@@ -90,12 +63,11 @@ function updateLoginState(isLoggedIn, infoText = "", userId = "") {
     }
 }
 
-
 // =========================================
-// [3] 모달 열기/닫기 로직
+// [3] UI 이벤트 (모달, 탭)
 // =========================================
 
-// 로그인/로그아웃
+// 3-1. 로그인/로그아웃
 authBtn.addEventListener('click', () => {
     if (authBtn.innerText === "로그인") {
         loginView.style.display = 'block';
@@ -113,13 +85,12 @@ authBtn.addEventListener('click', () => {
     }
 });
 
-// 닫기 버튼 이벤트 연결
-closeBtn.addEventListener('click', () => modal.style.display = 'none');
-closeRentModalBtn.addEventListener('click', () => rentModal.style.display = 'none');
-closeReturnModalBtn.addEventListener('click', () => returnModal.style.display = 'none');
-if(closeNoticeModalBtn) closeNoticeModalBtn.addEventListener('click', () => noticeDetailModal.style.display = 'none');
+// 3-2. 닫기 버튼들
+document.getElementById('closeModalBtn').addEventListener('click', () => modal.style.display = 'none');
+document.getElementById('closeRentModalBtn').addEventListener('click', () => rentModal.style.display = 'none');
+document.getElementById('closeReturnModalBtn').addEventListener('click', () => returnModal.style.display = 'none');
+document.getElementById('closeNoticeModalBtn').addEventListener('click', () => noticeDetailModal.style.display = 'none');
 
-// 배경 클릭 시 닫기
 window.addEventListener('click', (e) => {
     if (e.target === modal) modal.style.display = 'none';
     if (e.target === rentModal) rentModal.style.display = 'none';
@@ -127,28 +98,26 @@ window.addEventListener('click', (e) => {
     if (e.target === noticeDetailModal) noticeDetailModal.style.display = 'none';
 });
 
-// 화면 전환 (로그인 <-> 가입)
-showRegisterBtn.addEventListener('click', () => { loginView.style.display = 'none'; registerView.style.display = 'block'; });
-showLoginBtn.addEventListener('click', () => { registerView.style.display = 'none'; loginView.style.display = 'block'; });
+// 3-3. 화면 전환
+document.getElementById('showRegisterBtn').addEventListener('click', () => { loginView.style.display = 'none'; registerView.style.display = 'block'; });
+document.getElementById('showLoginBtn').addEventListener('click', () => { registerView.style.display = 'none'; loginView.style.display = 'block'; });
 
 
 // =========================================
-// [4] 데이터 불러오기 & 렌더링
+// [4] 데이터 로딩
 // =========================================
 
-// 4-1. 설정(배너/푸터) 불러오기
+// [4-1] 설정 로드
 async function loadSettings() {
     try {
         const res = await fetch('/settings');
         const data = await res.json();
         
-        // 푸터
         if(footerBizName) footerBizName.innerText = data.business_name || '첨성';
         if(footerAddress) footerAddress.innerText = data.address || '';
         if(footerContact) footerContact.innerText = data.contact || '';
         if(footerSitemap) footerSitemap.innerText = data.sitemap_text || '';
 
-        // 배너
         if (data.banner_image) {
             textLogo.style.display = 'none';
             bannerLogo.src = data.banner_image;
@@ -160,7 +129,7 @@ async function loadSettings() {
     } catch (err) { console.error('설정 로딩 실패'); }
 }
 
-// 4-2. 공지사항 (더보기 + 팝업 상세)
+// [4-2] 공지사항 (더보기/팝업)
 let allNotices = [];
 let noticeShowCount = 5;
 
@@ -186,10 +155,7 @@ function renderNotices() {
         li.style.padding = "10px 5px";
         li.style.borderBottom = "1px solid #eee";
         li.style.cursor = "pointer";
-        
-        // 클릭 시 팝업 열기
         li.onclick = () => openNoticeDetail(notice);
-
         li.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:bold; color:#333;">${notice.title}</span>
@@ -197,12 +163,10 @@ function renderNotices() {
             </div>
             <div style="font-size:0.9rem; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:5px;">
                 ${notice.content}
-            </div>
-        `;
+            </div>`;
         noticeList.appendChild(li);
     });
 
-    // 더보기 버튼
     const existingBtn = document.getElementById('moreNoticeBtn');
     if (existingBtn) existingBtn.remove();
 
@@ -214,115 +178,66 @@ function renderNotices() {
         moreBtn.style.padding = "10px";
         moreBtn.style.cursor = "pointer";
         moreBtn.style.color = "#007BFF";
-        moreBtn.style.fontSize = "0.9rem";
-        moreBtn.style.fontWeight = "bold";
-        moreBtn.onclick = () => {
-            noticeShowCount += 5;
-            renderNotices();
-        };
+        moreBtn.onclick = () => { noticeShowCount += 5; renderNotices(); };
         noticeList.parentNode.appendChild(moreBtn);
     }
 }
 
 function openNoticeDetail(notice) {
-    if(detailTitle) detailTitle.innerText = notice.title;
-    if(detailDate) detailDate.innerText = new Date(notice.created_at).toLocaleString();
-    if(detailContent) detailContent.innerText = notice.content;
-    if(noticeDetailModal) noticeDetailModal.style.display = 'flex';
+    document.getElementById('detailTitle').innerText = notice.title;
+    document.getElementById('detailDate').innerText = new Date(notice.created_at).toLocaleString();
+    document.getElementById('detailContent').innerText = notice.content;
+    noticeDetailModal.style.display = 'flex';
 }
 
-// 4-3. 일정 (D-Day)
+// [4-3] 일정 (D-Day)
 async function loadSchedules() {
     try {
         const res = await fetch('/schedules');
         const schedules = await res.json();
         scheduleList.innerHTML = '';
+        if (schedules.length === 0) { scheduleList.innerHTML = '<li style="padding:10px; text-align:center; color:#888;">일정이 없습니다.</li>'; return; }
 
-        if (schedules.length === 0) {
-            scheduleList.innerHTML = '<li style="padding:10px; text-align:center; color:#888;">예정된 일정이 없습니다.</li>';
-            return;
-        }
-
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
+        const today = new Date(); today.setHours(0,0,0,0);
         schedules.forEach(sched => {
             const eventDate = new Date(sched.event_date);
             const diffTime = eventDate - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            let dDayText = "";
-            let color = "#333";
-
-            if (diffDays === 0) { dDayText = "D-Day"; color = "#dc3545"; }
-            else if (diffDays > 0) { dDayText = `D-${diffDays}`; color = "#007bff"; }
-            else { dDayText = `D+${Math.abs(diffDays)}`; color = "#888"; }
+            let dDayText = diffDays === 0 ? "D-Day" : (diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`);
+            let color = diffDays === 0 ? "#dc3545" : (diffDays > 0 ? "#007bff" : "#888");
 
             const li = document.createElement('li');
-            li.style.padding = "12px 5px";
-            li.style.borderBottom = "1px solid #eee";
-            
-            li.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <strong style="color:${color}; min-width:50px;">${dDayText}</strong>
-                    <div>
-                        <span>${sched.title}</span><br>
-                        <span style="font-size:11px; color:#aaa;">${sched.event_date.split('T')[0]}</span>
-                    </div>
-                </div>`;
+            li.style.padding = "12px 5px"; li.style.borderBottom = "1px solid #eee";
+            li.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><strong style="color:${color}; min-width:50px;">${dDayText}</strong><div><span>${sched.title}</span><br><span style="font-size:11px; color:#aaa;">${sched.event_date.split('T')[0]}</span></div></div>`;
             scheduleList.appendChild(li);
         });
     } catch (err) { scheduleList.innerHTML = '<li>로딩 실패</li>'; }
 }
 
-// 4-4. 물품 대여 목록 (관리자는 상세 정보 보임)
+// [4-4] 대여 목록 (관리자 상세 보기 포함)
 async function loadRentals() {
     try {
         const res = await fetch('/rentals');
         const items = await res.json();
         rentalList.innerHTML = '';
-
         const currentId = localStorage.getItem('userId');
         const isAdmin = (currentId === 'admin');
 
         items.forEach(item => {
             const li = document.createElement('li');
-            li.style.display = "flex";
-            li.style.justifyContent = "space-between";
-            li.style.alignItems = "center";
-            li.style.padding = "12px 0";
-            li.style.borderBottom = "1px solid #eee";
-            li.style.flexWrap = "wrap"; 
+            li.style.display = "flex"; li.style.justifyContent = "space-between"; li.style.alignItems = "center";
+            li.style.padding = "12px 0"; li.style.borderBottom = "1px solid #eee"; li.style.flexWrap = "wrap";
 
-            // 왼쪽: 이름 + (관리자용 정보)
             let leftContent = `<div><span style="font-size:1rem; font-weight:bold;">${item.item_name}</span>`;
-            
             if (isAdmin && item.is_rented === 1) {
-                leftContent += `
-                    <div style="font-size:0.85rem; color:#666; margin-top:4px; background:#f1f1f1; padding:4px 8px; border-radius:4px;">
-                        👤 ${item.renter_name} (${item.renter_student_id})<br>
-                        📞 ${item.renter_phone || '-'}
-                    </div>`;
+                leftContent += `<div style="font-size:0.85rem; color:#666; margin-top:4px; background:#f1f1f1; padding:4px 8px; border-radius:4px;">👤 ${item.renter_name} (${item.renter_student_id})<br>📞 ${item.renter_phone || '-'}</div>`;
             }
             leftContent += `</div>`;
 
-            // 오른쪽: 버튼
-            let rightContent = '';
-
-            if (item.is_rented === 1) {
-                rightContent = `
-                    <button onclick="openReturnModal(${item.id})" 
-                            style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">
-                        대여중 (반납)
-                    </button>`;
-            } else {
-                rightContent = `
-                    <button onclick="openRentModal(${item.id}, '${item.item_name}')" 
-                            style="background:#007BFF; color:white; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer;">
-                        대여하기
-                    </button>`;
-            }
-
+            let rightContent = item.is_rented === 1 
+                ? `<button onclick="openReturnModal(${item.id})" style="background:#ffc107; color:black; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer; font-weight:bold;">대여중 (반납)</button>`
+                : `<button onclick="openRentModal(${item.id}, '${item.item_name}')" style="background:#007BFF; color:white; border:none; border-radius:5px; padding:5px 10px; font-size:0.8rem; cursor:pointer;">대여하기</button>`;
+            
             li.innerHTML = leftContent + `<div style="margin-top:5px;">${rightContent}</div>`;
             rentalList.appendChild(li);
         });
@@ -331,10 +246,8 @@ async function loadRentals() {
 
 
 // =========================================
-// [5] 사용자 액션 (대여, 반납, 로그인)
+// [5] 폼 제출 (로그인, 가입, 대여, 반납)
 // =========================================
-
-// 모달 열기 함수들
 window.openRentModal = (id, name) => {
     document.getElementById('rentItemId').value = id;
     document.getElementById('rentItemName').innerText = name;
@@ -351,110 +264,67 @@ window.openReturnModal = (id) => {
     returnModal.style.display = 'flex';
 };
 
-// 대여 신청 (전화번호 포함)
-rentForm.addEventListener('submit', async (e) => {
+document.getElementById('rentForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('rentItemId').value;
     const renterStudentId = document.getElementById('rentStudentId').value;
     const renterName = document.getElementById('rentName').value;
     const renterPhone = document.getElementById('rentPhone').value;
-
     try {
-        const res = await fetch('/rentals/rent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, renterStudentId, renterName, renterPhone })
-        });
-        if (res.ok) {
-            alert('대여 완료! 반납 시 학번과 사진이 필요합니다.');
-            rentModal.style.display = 'none';
-            loadRentals();
-        } else {
-            const data = await res.json();
-            alert(data.error);
-        }
-    } catch (err) { alert('서버 오류'); }
+        const res = await fetch('/rentals/rent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, renterStudentId, renterName, renterPhone }) });
+        const data = await res.json();
+        if (res.ok) { alert('대여 완료!'); rentModal.style.display = 'none'; loadRentals(); } 
+        else { alert(data.error); }
+    } catch (err) { alert('오류'); }
 });
 
-// 반납 신청 (파일 업로드)
-returnForm.addEventListener('submit', async (e) => {
+document.getElementById('returnForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('id', document.getElementById('returnItemId').value);
     formData.append('confirmStudentId', document.getElementById('returnStudentId').value);
     formData.append('returnPhoto', document.getElementById('returnPhoto').files[0]);
-
     try {
         const res = await fetch('/rentals/return', { method: 'POST', body: formData });
         const data = await res.json();
+        if (res.ok) { alert('반납 확인됨'); returnModal.style.display = 'none'; loadRentals(); } 
+        else { alert(data.error); }
+    } catch (err) { alert('오류'); }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const u = document.getElementById('loginUsername').value;
+    const p = document.getElementById('loginPassword').value;
+    try {
+        const res = await fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username:u, password:p }) });
+        const data = await res.json();
         if (res.ok) {
-            alert('반납 처리가 완료되었습니다.');
-            returnModal.style.display = 'none';
-            loadRentals();
-        } else {
-            alert(data.error);
-        }
-    } catch (err) { alert('서버 오류'); }
-});
-
-// 로그인
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await response.json();
-
-        if (response.ok) {
             alert(data.message);
-            const displayText = `${data.studentId} ${data.name}`;
-            localStorage.setItem('userInfo', displayText);
+            localStorage.setItem('userInfo', `${data.studentId} ${data.name}`);
             localStorage.setItem('userId', data.username);
-            modal.style.display = 'none';
             location.reload();
-        } else {
-            alert(data.error);
-        }
-    } catch (err) { alert("서버 연결 실패"); }
+        } else { alert(data.error); }
+    } catch (err) { alert("오류"); }
 });
 
-// 회원가입
-registerForm.addEventListener('submit', async (e) => {
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const studentId = document.getElementById('regStudentId').value;
-    const name = document.getElementById('regName').value;
-    const username = document.getElementById('regUsername').value;
-    const password = document.getElementById('regPassword').value;
-    const confirmPw = document.getElementById('regPasswordConfirm').value;
-
-    if (password !== confirmPw) { alert("비밀번호가 일치하지 않습니다."); return; }
-
+    const id = document.getElementById('regStudentId').value;
+    const nm = document.getElementById('regName').value;
+    const u = document.getElementById('regUsername').value;
+    const p = document.getElementById('regPassword').value;
+    const cp = document.getElementById('regPasswordConfirm').value;
+    if (p !== cp) { alert("비번 불일치"); return; }
     try {
-        const response = await fetch('/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, studentId, name })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            alert(data.message);
-            registerView.style.display = 'none';
-            loginView.style.display = 'block';
-        } else {
-            alert(data.error);
-        }
-    } catch (err) { alert("오류 발생"); }
+        const res = await fetch('/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username:u, password:p, studentId:id, name:nm }) });
+        const data = await res.json();
+        if (res.ok) { alert(data.message); registerView.style.display = 'none'; loginView.style.display = 'block'; } 
+        else { alert(data.error); }
+    } catch (err) { alert("오류"); }
 });
 
-// =========================================
-// [6] 초기 실행
-// =========================================
+// 실행
 loadSettings();
 loadNotices();
 loadSchedules();
