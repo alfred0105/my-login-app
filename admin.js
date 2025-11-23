@@ -391,6 +391,16 @@ window.updateSchedule = async () => {
     loadAdminSchedules();
 };
 
+// [★ 실시간 통신 설정]
+const socket = io();
+
+socket.on('update_users', () => loadPending());       // 회원가입 오면 대기목록 갱신
+socket.on('update_notices', () => loadAdminNotices());
+socket.on('update_schedules', () => loadAdminSchedules());
+socket.on('update_rentals', () => loadAdminRentals());
+socket.on('update_logs', () => loadLogs());           // 반납하면 로그 갱신
+socket.on('update_settings', () => loadSettings());
+
 
 // =========================================
 // [6] 초기 로드 실행
