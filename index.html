@@ -7,96 +7,60 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <header class="main-header">
         <div class="logo">
             <h1 id="textLogo">첨성</h1>
-            <img id="bannerLogo" src="" alt="메인 배너" style="display: none; max-height: 50px;">
+            <img id="bannerLogo" src="" alt="Banner" style="display:none; max-height:50px;">
         </div>
         <div class="login">
             <button id="authBtn">로그인</button>
-            <span id="userDisplay" style="margin-left: 10px; font-weight: bold; font-size: 0.9rem;"></span>
+            <span id="userDisplay" style="margin-left:10px; font-weight:bold;"></span>
         </div>
     </header>
 
     <main class="container">
-        
         <section class="left-column">
             <div class="schedule-box">
                 <h2>📅 주요 일정</h2>
-                <ul id="scheduleList">
-                    <li>일정을 불러오는 중...</li>
-                </ul>
+                <ul id="scheduleList"><li>로딩 중...</li></ul>
             </div>
         </section>
-
         <aside class="right-column">
-            
             <section class="notice-box">
                 <h2>📢 공지사항</h2>
-                <ul id="noticeList">
-                    <li>로딩 중...</li>
-                </ul>
+                <ul id="noticeList"><li>로딩 중...</li></ul>
             </section>
-
             <section class="rental-box">
                 <h2>🎒 물품대여</h2>
-                <ul id="rentalList">
-                    <li>로딩 중...</li>
-                </ul>
+                <ul id="rentalList"><li>로딩 중...</li></ul>
             </section>
-
         </aside>
-
     </main>
 
     <footer class="main-footer">
         <div class="footer-content">
             <div class="biz-info">
-                <strong id="footerBizName">첨성 프로젝트</strong><br>
-                <span id="footerAddress">주소 미입력</span><br>
-                <span id="footerContact">Tel: 010-0000-0000</span>
+                <strong id="footerBizName"></strong><br>
+                <span id="footerAddress"></span><br>
+                <span id="footerContact"></span>
             </div>
-            <div class="sitemap">
-                <strong>Sitemap</strong>
-                <p id="footerSitemap">홈 | 공지사항 | 일정 | 물품대여</p>
-            </div>
+            <div class="sitemap"><strong>Sitemap</strong><p id="footerSitemap"></p></div>
         </div>
-        <div class="copy">
-            &copy; 2025 Cheomseong. All rights reserved. v.1.0.1
-        </div>
+        <div class="copy">&copy; 2025 Cheomseong. All rights reserved.</div>
     </footer>
-
 
     <div id="loginModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" id="closeModalBtn">&times;</span>
-            
             <div id="loginView">
                 <h2>로그인</h2>
-                <form id="loginForm">
-                    <input type="text" id="loginUsername" placeholder="아이디" required>
-                    <input type="password" id="loginPassword" placeholder="비밀번호" required>
-                    <button type="submit">로그인</button>
-                </form>
-                <p class="modal-footer-text">
-                    계정이 없으신가요? <span id="showRegisterBtn">회원가입</span>
-                </p>
+                <form id="loginForm"><input type="text" id="loginUsername" placeholder="아이디" required><input type="password" id="loginPassword" placeholder="비번" required><button type="submit">로그인</button></form>
+                <p class="modal-footer-text">계정 없음? <span id="showRegisterBtn">회원가입</span></p>
             </div>
-
-            <div id="registerView" style="display: none;">
+            <div id="registerView" style="display:none;">
                 <h2>회원가입</h2>
-                <form id="registerForm">
-                    <input type="text" id="regStudentId" placeholder="학번 (예: 20241234)" required>
-                    <input type="text" id="regName" placeholder="이름" required>
-                    <input type="text" id="regUsername" placeholder="사용할 아이디" required>
-                    <input type="password" id="regPassword" placeholder="비밀번호" required>
-                    <input type="password" id="regPasswordConfirm" placeholder="비밀번호 확인" required>
-                    <button type="submit" style="background-color: #28a745;">가입 신청</button>
-                </form>
-                <p class="modal-footer-text">
-                    이미 계정이 있나요? <span id="showLoginBtn">로그인</span>
-                </p>
+                <form id="registerForm"><input type="text" id="regStudentId" placeholder="학번" required><input type="text" id="regName" placeholder="이름" required><input type="text" id="regUsername" placeholder="아이디" required><input type="password" id="regPassword" placeholder="비번" required><input type="password" id="regPasswordConfirm" placeholder="비번확인" required><button type="submit" style="background:#28a745;">가입신청</button></form>
+                <p class="modal-footer-text">계정 있음? <span id="showLoginBtn">로그인</span></p>
             </div>
         </div>
     </div>
@@ -105,14 +69,8 @@
         <div class="modal-content">
             <span class="close-btn" id="closeRentModalBtn">&times;</span>
             <h2>물품 대여</h2>
-            <p id="rentItemName" style="color: #007BFF; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem;"></p>
-            <form id="rentForm">
-                <input type="hidden" id="rentItemId">
-                <input type="text" id="rentStudentId" placeholder="학번 (예: 20241234)" required>
-                <input type="text" id="rentName" placeholder="이름" required>
-                <input type="tel" id="rentPhone" placeholder="전화번호 (010-0000-0000)" required>
-                <button type="submit" style="background-color: #28a745;">빌리기</button>
-            </form>
+            <p id="rentItemName" style="color:#007BFF; font-weight:bold;"></p>
+            <form id="rentForm"><input type="hidden" id="rentItemId"><input type="text" id="rentStudentId" placeholder="학번" required><input type="text" id="rentName" placeholder="이름" required><input type="tel" id="rentPhone" placeholder="전화번호" required><button type="submit" style="background:#28a745;">빌리기</button></form>
         </div>
     </div>
 
@@ -120,45 +78,21 @@
         <div class="modal-content">
             <span class="close-btn" id="closeReturnModalBtn">&times;</span>
             <h2>물품 반납</h2>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px; line-height: 1.4;">
-                본인 확인을 위해 학번을 입력하고<br>
-                <strong>반납 인증 사진</strong>을 꼭 올려주세요.
-            </p>
-            
-            <form id="returnForm">
-                <input type="hidden" id="returnItemId">
-                <input type="text" id="returnStudentId" placeholder="대여 시 입력한 학번" required>
-                
-                <div style="text-align: left; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 5px;">
-                    <label style="font-size: 12px; display: block; margin-bottom: 5px;">📸 반납 사진 촬영/업로드:</label>
-                    <input type="file" id="returnPhoto" accept="image/*" required style="border: none; padding: 0; width: 100%;">
-                </div>
-
-                <button type="submit" style="background-color: #ffc107; color: #333; font-weight: bold;">반납하기</button>
-            </form>
+            <p style="font-size:13px; color:#666;">학번 입력 & 사진 업로드 필수</p>
+            <form id="returnForm"><input type="hidden" id="returnItemId"><input type="text" id="returnStudentId" placeholder="학번" required><div style="margin:10px 0;"><input type="file" id="returnPhoto" accept="image/*" required></div><button type="submit" style="background:#ffc107; color:black;">반납하기</button></form>
         </div>
     </div>
 
     <div id="noticeDetailModal" class="modal-overlay">
-        <div class="modal-content" style="text-align: left;">
+        <div class="modal-content" style="text-align:left;">
             <span class="close-btn" id="closeNoticeModalBtn">&times;</span>
-            <h2 id="detailTitle" style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;"></h2>
-            <p id="detailDate" style="font-size: 0.8rem; color: #888; margin-bottom: 20px;"></p>
-            <div id="detailContent" style="white-space: pre-wrap; line-height: 1.6; min-height: 100px;"></div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button onclick="document.getElementById('noticeDetailModal').style.display='none'" style="background: #6c757d;">닫기</button>
-            </div>
+            <h2 id="detailTitle" style="margin-top:0; border-bottom:1px solid #eee;"></h2>
+            <p id="detailDate" style="font-size:0.8rem; color:#888;"></p>
+            <div id="detailContent" style="white-space:pre-wrap; min-height:100px;"></div>
+            <div style="text-align:center; margin-top:20px;"><button onclick="document.getElementById('noticeDetailModal').style.display='none'" style="background:#6c757d;">닫기</button></div>
         </div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
+
     <script src="script.js"></script>
 </body>
-<<<<<<< HEAD
-    <script src="/socket.io/socket.io.js"></script>
-    
-    <script src="script.js"></script> </body>
-=======
-    
-    
->>>>>>> a397f74e0b7fb5692c2ceb5154ef2a5ef9a710e1
 </html>

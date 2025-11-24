@@ -4,158 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지</title>
-    <link rel="stylesheet" href="style.css"> <style>
-        /* 관리자 페이지 전용 추가 스타일 */
+    <link rel="stylesheet" href="style.css">
+    <style>
         body { background-color: #f4f6f9; padding: 20px; }
         .admin-container { max-width: 1000px; margin: 0 auto; }
         .admin-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .admin-card h3 { border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
-        .back-btn { display: inline-block; margin-bottom: 20px; color: #333; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
-        
-        /* 폼 요소 스타일 override */
-        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold; }
-        
-        /* 테이블 스타일 */
+        h3 { border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: #333; text-decoration: none; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { padding: 8px 15px; border-radius: 5px; border: none; color: white; font-weight: bold; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; font-weight: bold; }
-        .photo-btn { background: #17a2b8; padding: 4px 8px; border-radius: 3px; text-decoration: none; color: white; font-size: 0.8rem; }
+        th { background: #f8f9fa; }
+        .tag { padding: 3px 6px; border-radius: 3px; font-size: 0.8rem; color: white; }
+        .tag-admin { background: #6610f2; } .tag-user { background: #6c757d; } .tag-wait { background: #ffc107; color: black; }
     </style>
 </head>
 <body>
-
     <div class="admin-container">
-        <a href="/" class="back-btn">← 메인 화면으로 돌아가기</a>
-        <h1 style="margin-bottom: 30px;">⚙️ 관리자 대시보드</h1>
+        <a href="/" class="back-btn">← 메인으로</a>
+        <h1>⚙️ 관리자 대시보드</h1>
 
-        <div class="admin-card">
-            <h3>🎨 메인 배너 설정</h3>
-            <label>배너 이미지 업로드 (설정 시 텍스트 로고 대신 표시됩니다)</label>
-            <div style="display:flex; gap:10px; align-items: center;">
-                <input type="file" id="bannerFile" accept="image/*" style="margin:0;">
+        <div class="admin-card" style="border:2px solid #007BFF;">
+            <h3>🎨 디자인 & 설정</h3>
+            <div style="display:flex; gap:20px; margin-bottom:15px;">
+                <div style="flex:1;"><label>배경색</label><input type="color" id="editBgColor" style="height:40px; padding:0;"></div>
+                <div style="flex:1;"><label>헤더색</label><input type="color" id="editHeaderColor" style="height:40px; padding:0;"></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:20px; align-items:center;">
+                <label>배너:</label><input type="file" id="bannerFile" accept="image/*" style="margin:0;">
                 <button onclick="uploadBanner()" style="background:#007BFF;">적용</button>
                 <button onclick="deleteBanner()" style="background:#dc3545;">삭제</button>
             </div>
-        </div>
-
-        <div class="admin-card">
-            <h3>✅ 회원가입 승인 대기</h3>
-            <div id="pendingList">로딩 중...</div>
-        </div>
-
-        <div class="admin-card">
-            <h3>🎒 대여 물품 관리</h3>
-            
-            <div style="background: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <h4>📦 현재 대여 현황 (실시간)</h4>
-                <div id="currentRentals">로딩 중...</div>
-            </div>
-
-            <h4>새 물품 추가</h4>
-            <form id="addRentalForm" style="display:flex; gap:10px;">
-                <input type="text" id="newItemName" placeholder="물품명 (예: 우산, 멀티탭)" required style="margin:0;">
-                <button type="submit" style="background:#ffc107; color:black; border:none; white-space:nowrap;">추가하기</button>
-            </form>
-            
-            <h4 style="margin-top:20px;">전체 물품 목록 (삭제 관리)</h4>
-            <ul id="adminRentalList" style="list-style:none; padding:0; border:1px solid #eee; border-radius:5px;">
-                <li style="padding:10px; text-align:center;">로딩 중...</li>
-            </ul>
-        </div>
-
-        <div class="admin-card">
-            <h3>🗂️ 반납 기록 (최근 90일)</h3>
-            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">* 반납 인증 사진과 대여 기간을 확인할 수 있습니다.</p>
-            <div style="overflow-x: auto;">
-                <table id="logTable">
-                    <thead>
-                        <tr>
-                            <th>물품명</th>
-                            <th>빌린사람</th>
-                            <th>기간</th>
-                            <th>반납일</th>
-                            <th>인증샷</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logList"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="admin-card">
-            <h3>📝 컨텐츠 관리</h3>
-            <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                <div style="flex:1; min-width: 300px;">
-                    <h4>📢 공지사항 등록</h4>
-                    <form id="noticeForm">
-                        <input type="text" id="noticeTitle" placeholder="제목" required>
-                        <textarea id="noticeContent" placeholder="내용" rows="3" required></textarea>
-                        <button type="submit" style="background:#28a745; width:100%;">등록</button>
-                    </form>
-                    </div>
-                <div style="flex:1; min-width: 300px;">
-                    <h4>📅 일정 추가</h4>
-                    <form id="scheduleForm">
-                        <input type="text" id="schedTitle" placeholder="일정명" required>
-                        <input type="date" id="schedDate" required>
-                        <button type="submit" style="background:#6610f2; width:100%;">추가</button>
-                    </form>
-                     </div>
-            </div>
-        </div>
-
-        <div class="admin-card" style="border: 2px solid #17a2b8;">
-            <h3>🛠️ 사이트 하단(Footer) 정보 수정</h3>
+            <h4>푸터 정보</h4>
             <form id="settingsForm">
-                <label>상호명 (Business Name)</label>
-                <input type="text" id="editBizName" placeholder="예: 첨성 프로젝트">
-                
-                <label>주소 (Address)</label>
-                <input type="text" id="editAddress" placeholder="예: 공학관 101호">
-                
-                <label>연락처 (Contact)</label>
-                <input type="text" id="editContact" placeholder="예: 010-1234-5678">
-                
-                <label>사이트맵 텍스트</label>
-                <textarea id="editSitemap" placeholder="예: 홈 | 공지사항..." rows="2"></textarea>
-                
-                <button type="submit" style="background:#17a2b8; width:100%;">정보 저장</button>
+                <input type="text" id="editBizName" placeholder="상호명"><input type="text" id="editAddress" placeholder="주소">
+                <input type="text" id="editContact" placeholder="연락처"><textarea id="editSitemap" placeholder="사이트맵" rows="2"></textarea>
+                <button type="submit" style="background:#17a2b8; width:100%;">저장</button>
             </form>
         </div>
 
+        <div class="admin-card">
+            <h3>👥 계정 관리</h3>
+            <div style="overflow-x:auto; max-height:300px;"><table id="userTable"><thead><tr><th>정보</th><th>ID</th><th>상태</th><th>권한</th><th>관리</th></tr></thead><tbody id="userList"></tbody></table></div>
+        </div>
+
+        <div class="admin-card">
+            <h3>🎒 대여 물품</h3>
+            <div id="currentRentals" style="background:#fff8e1; padding:10px; border-radius:5px; margin-bottom:15px;">로딩 중...</div>
+            <form id="addRentalForm" style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="newItemName" placeholder="물품명" required style="margin:0;"><button type="submit" style="background:#ffc107; color:black; white-space:nowrap;">추가</button></form>
+            <h4>목록</h4><ul id="adminRentalList" style="list-style:none; padding:0; border:1px solid #eee;"></ul>
+        </div>
+
+        <div class="admin-card"><h3>🗂️ 반납 기록 (90일)</h3><div style="overflow-x:auto;"><table id="logTable"><thead><tr><th>물품</th><th>정보</th><th>기간</th><th>반납일</th><th>사진</th></tr></thead><tbody id="logList"></tbody></table></div></div>
+
+        <div class="admin-card">
+            <h3>📝 컨텐츠</h3>
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <div style="flex:1;"><h4>공지사항</h4><form id="noticeForm"><input type="text" id="noticeTitle" placeholder="제목" required><textarea id="noticeContent" placeholder="내용" rows="2" required></textarea><button type="submit" style="background:#28a745; width:100%;">등록</button></form><div id="adminNoticeList"></div></div>
+                <div style="flex:1;"><h4>일정</h4><form id="scheduleForm"><input type="text" id="schedTitle" placeholder="일정명" required><input type="date" id="schedDate" required><button type="submit" style="background:#6610f2; width:100%;">추가</button></form><div id="adminScheduleList"></div></div>
+            </div>
+        </div>
     </div>
 
     <div id="editNoticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:10px; width:90%; max-width:400px;">
-            <h3>공지사항 수정</h3>
-            <input type="hidden" id="editNoticeId">
-            <input type="text" id="editNoticeTitle" placeholder="제목">
-            <textarea id="editNoticeContent" rows="5" placeholder="내용"></textarea>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="updateNotice()" style="background:#28a745; border:none; color:white;">수정완료</button>
-                <button onclick="document.getElementById('editNoticeModal').style.display='none'" style="background:#6c757d; border:none; color:white;">취소</button>
-            </div>
+        <div style="background:white; padding:20px; border-radius:10px; width:300px;">
+            <h3>공지 수정</h3><input type="hidden" id="editNoticeId"><input type="text" id="editNoticeTitle"><textarea id="editNoticeContent" rows="3"></textarea>
+            <div style="text-align:right; margin-top:10px;"><button onclick="updateNotice()" style="background:#28a745;">수정</button> <button onclick="document.getElementById('editNoticeModal').style.display='none'" style="background:#6c757d;">취소</button></div>
         </div>
     </div>
-
     <div id="editScheduleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:10px; width:90%; max-width:400px;">
-            <h3>일정 수정</h3>
-            <input type="hidden" id="editScheduleId">
-            <input type="text" id="editSchedTitle" placeholder="일정명">
-            <input type="date" id="editSchedDate">
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="updateSchedule()" style="background:#28a745; border:none; color:white;">수정완료</button>
-                <button onclick="document.getElementById('editScheduleModal').style.display='none'" style="background:#6c757d; border:none; color:white;">취소</button>
-            </div>
+        <div style="background:white; padding:20px; border-radius:10px; width:300px;">
+            <h3>일정 수정</h3><input type="hidden" id="editScheduleId"><input type="text" id="editSchedTitle"><input type="date" id="editSchedDate">
+            <div style="text-align:right; margin-top:10px;"><button onclick="updateSchedule()" style="background:#28a745;">수정</button> <button onclick="document.getElementById('editScheduleModal').style.display='none'" style="background:#6c757d;">취소</button></div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="admin.js"></script>
-
 </body>
-    <script src="/socket.io/socket.io.js"></script>
-    
-    <script src="script.js"></script> </body>
 </html>
